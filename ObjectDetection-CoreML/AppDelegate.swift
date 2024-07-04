@@ -1,9 +1,9 @@
 //
 //  AppDelegate.swift
-//  SSDMobileNet-CoreML
+//  ObjectDetection-CoreML
 //
-//  Created by GwakDoyoung on 01/02/2019.
-//  Copyright © 2019 tucan9389. All rights reserved.
+//  Created by Huy Dang on 22/6/24.
+//  Copyright © 2024 tucan9389. All rights reserved.
 //
 
 import UIKit
@@ -14,8 +14,19 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
 
 
+//    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+//        // Override point for customization after application launch.
+//        return true
+//    }
+    
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // Override point for customization after application launch.
+        window = UIWindow(frame: UIScreen.main.bounds)
+                
+                // Set the TabBarController as the root view controller
+                let tabBarController = TabBarController()
+                window?.rootViewController = tabBarController
+                window?.makeKeyAndVisible()
+       
         return true
     }
 

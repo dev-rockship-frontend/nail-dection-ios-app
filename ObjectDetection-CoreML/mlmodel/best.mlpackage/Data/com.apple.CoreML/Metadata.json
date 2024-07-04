@@ -1,0 +1,16 @@
+{
+  "MLModelVersionStringKey" : "8.0.196",
+  "MLModelDescriptionKey" : "Ultralytics best model trained on \/content\/datasets\/Nails-on-wall-3\/data.yaml",
+  "MLModelCreatorDefinedKey" : {
+    "stride" : "32",
+    "Confidence threshold" : "0.25",
+    "IoU threshold" : "0.45",
+    "task" : "detect",
+    "imgsz" : "[640, 640]",
+    "date" : "2024-06-19T14:41:21.807833",
+    "batch" : "1",
+    "names" : "{0: 'nail'}"
+  },
+  "MLModelAuthorKey" : "Ultralytics",
+  "MLModelLicenseKey" : "AGPL-3.0 https:\/\/ultralytics.com\/license"
+}

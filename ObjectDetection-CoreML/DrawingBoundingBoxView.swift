@@ -25,42 +25,118 @@ class DrawingBoundingBoxView: UIView {
     
     public var predictedObjects: [VNRecognizedObjectObservation] = [] {
         didSet {
-            self.drawBoxs(with: predictedObjects)
             self.setNeedsDisplay()
         }
     }
     
-    func drawBoxs(with predictions: [VNRecognizedObjectObservation]) {
+    override func draw(_ rect: CGRect) {
+        super.draw(rect)
+        guard let context = UIGraphicsGetCurrentContext() else { return }
+        context.clear(rect)
+        drawBoundingBoxes()
+        drawConnectingLines(context: context)
+    }
+    
+    func drawBoundingBoxes() {
         subviews.forEach({ $0.removeFromSuperview() })
         
-        for prediction in predictions {
+        for prediction in predictedObjects {
             createLabelAndBox(prediction: prediction)
         }
     }
     
     func createLabelAndBox(prediction: VNRecognizedObjectObservation) {
-        let labelString: String? = prediction.label
-        let color: UIColor = labelColor(with: labelString ?? "N/A")
-        
         let scale = CGAffineTransform.identity.scaledBy(x: bounds.width, y: bounds.height)
         let transform = CGAffineTransform(scaleX: 1, y: -1).translatedBy(x: 0, y: -1)
         let bgRect = prediction.boundingBox.applying(transform).applying(scale)
         
         let bgView = UIView(frame: bgRect)
-        bgView.layer.borderColor = color.cgColor
-        bgView.layer.borderWidth = 4
+        bgView.layer.borderColor = UIColor.green.cgColor
+        bgView.layer.borderWidth = 1
         bgView.backgroundColor = UIColor.clear
         addSubview(bgView)
+    }
+    
+    func drawConnectingLines(context: CGContext) {
+        guard predictedObjects.count > 1 else { return }
         
-        let label = UILabel(frame: CGRect(x: 0, y: 0, width: 300, height: 300))
-        label.text = labelString ?? "N/A"
-        label.font = UIFont.systemFont(ofSize: 13)
-        label.textColor = UIColor.black
-        label.backgroundColor = color
-        label.sizeToFit()
-        label.frame = CGRect(x: bgRect.origin.x, y: bgRect.origin.y - label.frame.height,
-                             width: label.frame.width, height: label.frame.height)
-        addSubview(label)
+        let points = predictedObjects.map { prediction -> CGPoint in
+            let scale = CGAffineTransform.identity.scaledBy(x: bounds.width, y: bounds.height)
+            let transform = CGAffineTransform(scaleX: 1, y: -1).translatedBy(x: 0, y: -1)
+            let centerRect = prediction.boundingBox.applying(transform).applying(scale)
+            return CGPoint(x: centerRect.midX, y: centerRect.midY)
+        }
+        
+        context.setStrokeColor(UIColor.red.cgColor)
+        context.setLineWidth(2.0)
+        
+        drawMinimumSpanningTree(context: context, points: points)
+    }
+    
+    func drawMinimumSpanningTree(context: CGContext, points: [CGPoint]) {
+        let edges = createEdges(points: points)
+        let mstEdges = kruskal(points: points, edges: edges)
+        
+        context.beginPath()
+        for edge in mstEdges {
+            context.move(to: edge.0)
+            context.addLine(to: edge.1)
+        }
+        context.strokePath()
+    }
+    
+    func createEdges(points: [CGPoint]) -> [(CGPoint, CGPoint, CGFloat)] {
+        var edges: [(CGPoint, CGPoint, CGFloat)] = []
+        for i in 0..<points.count {
+            for j in i+1..<points.count {
+                let distance = hypot(points[i].x - points[j].x, points[i].y - points[j].y)
+                edges.append((points[i], points[j], distance))
+            }
+        }
+        return edges
+    }
+    
+    func kruskal(points: [CGPoint], edges: [(CGPoint, CGPoint, CGFloat)]) -> [(CGPoint, CGPoint)] {
+        var parent = [Int](0..<points.count)
+        var rank = [Int](repeating: 0, count: points.count)
+        
+        func find(_ x: Int) -> Int {
+            if parent[x] != x {
+                parent[x] = find(parent[x])
+            }
+            return parent[x]
+        }
+        
+        func union(_ x: Int, _ y: Int) {
+            let rootX = find(x)
+            let rootY = find(y)
+            if rootX != rootY {
+                if rank[rootX] < rank[rootY] {
+                    parent[rootX] = rootY
+                } else if rank[rootX] > rank[rootY] {
+                    parent[rootY] = rootX
+                } else {
+                    parent[rootY] = rootX
+                    rank[rootX] += 1
+                }
+            }
+        }
+        
+        let sortedEdges = edges.sorted { $0.2 < $1.2 }
+        var mstEdges: [(CGPoint, CGPoint)] = []
+        
+        for edge in sortedEdges {
+            let (point1, point2, _) = edge
+            let index1 = points.firstIndex(of: point1)!
+            let index2 = points.firstIndex(of: point2)!
+            
+            if find(index1) != find(index2) {
+                mstEdges.append((point1, point2))
+                union(index1, index2)
+            }
+        }
+        
+        return mstEdges
     }
 }
 
@@ -77,5 +153,16 @@ extension CGRect {
         let wStr = String(format: "%.\(digit)f", width)
         let hStr = String(format: "%.\(digit)f", height)
         return "(\(xStr), \(yStr), \(wStr), \(hStr))"
+    }
+}
+
+extension CGPoint: Hashable {
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(x)
+        hasher.combine(y)
+    }
+    
+    public static func == (lhs: CGPoint, rhs: CGPoint) -> Bool {
+        return lhs.x == rhs.x && lhs.y == rhs.y
     }
 }
