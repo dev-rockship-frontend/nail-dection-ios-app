@@ -19,13 +19,13 @@ class DistanceViewController: UIViewController, ARSCNViewDelegate, ARSessionDele
         super.viewDidLoad()
         
         sceneView = ARSCNView()
-        self.view.addSubview(sceneView)
+        view.addSubview(sceneView)
         
         sceneView.delegate = self
         sceneView.session.delegate = self
         
-        let configuration = ARWorldTrackingConfiguration()
-        sceneView.session.run(configuration)
+        //        let configuration = ARWorldTrackingConfiguration()
+        //        sceneView.session.run(configuration)
         
         setupDistanceLabel()
         setupResetButton()
@@ -33,21 +33,28 @@ class DistanceViewController: UIViewController, ARSCNViewDelegate, ARSessionDele
         sceneView.snp.makeConstraints { make in
             make.top.equalTo(view.safeAreaLayoutGuide.snp.top)
             make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom)
-            make.leading.equalTo(view.safeAreaLayoutGuide.snp.leading)
-            make.trailing.equalTo(view.safeAreaLayoutGuide.snp.trailing)
+            make.left.right.equalToSuperview()
         }
         
-//        sceneView = ARSCNView(frame: self.view.frame)
-//        self.view.addSubview(sceneView)
-//        
-//        sceneView.delegate = self
-//        sceneView.session.delegate = self
-//        
-//        let configuration = ARWorldTrackingConfiguration()
-//        sceneView.session.run(configuration)
-//        
-//        setupDistanceLabel()
-//        setupResetButton()
+        startARSession()
+        
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        // Restart the AR session when the view appears
+        startARSession()
+        distanceLabel.text = "Distance: 0 cm"
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        sceneView.session.pause()
+    }
+    
+    func startARSession() {
+        let configuration = ARWorldTrackingConfiguration()
+        sceneView.session.run(configuration, options: [.resetTracking, .removeExistingAnchors])
     }
     
     func setupDistanceLabel() {
@@ -70,14 +77,14 @@ class DistanceViewController: UIViewController, ARSCNViewDelegate, ARSessionDele
         resetButton.translatesAutoresizingMaskIntoConstraints = false
         resetButton.setTitle("Reset", for: .normal)
         resetButton.addTarget(self, action: #selector(resetAnchors), for: .touchUpInside)
-        self.view.addSubview(resetButton)
+        view.addSubview(resetButton)
         
-        NSLayoutConstraint.activate([
-            resetButton.topAnchor.constraint(equalTo: self.view.topAnchor, constant: 40),
-            resetButton.centerXAnchor.constraint(equalTo: self.view.centerXAnchor),
-            resetButton.widthAnchor.constraint(equalToConstant: 100),
-            resetButton.heightAnchor.constraint(equalToConstant: 50)
-        ])
+        resetButton.snp.makeConstraints { make in
+            make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(50)
+            make.centerX.equalToSuperview()
+            make.width.equalTo(48)
+            make.height.equalTo(40)
+        }
     }
     
     @objc func resetAnchors() {
@@ -90,10 +97,7 @@ class DistanceViewController: UIViewController, ARSCNViewDelegate, ARSessionDele
         }
     }
     
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
-        sceneView.session.pause()
-    }
+    
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         guard let touch = touches.first else { return }
