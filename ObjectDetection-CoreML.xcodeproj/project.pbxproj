@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		1B1B2BAB2C368DAC006A4C1D /* DetectNailViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 1B1B2BAA2C368DAC006A4C1D /* DetectNailViewController.xib */; };
+		1BDA9BB92C3697D5002B62F5 /* DistanceViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1BDA9BB82C3697D5002B62F5 /* DistanceViewController.swift */; };
 		553366C62204898800A67647 /* ObjectDetection_CoreMLTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 553366C52204898800A67647 /* ObjectDetection_CoreMLTests.swift */; };
 		553366CF220489DD00A67647 /* UIImage+CVPixelBuffer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 553366CE220489DD00A67647 /* UIImage+CVPixelBuffer.swift */; };
 		554F149C220362AB00B828B0 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 554F149B220362AB00B828B0 /* AppDelegate.swift */; };
@@ -39,6 +40,7 @@
 
 /* Begin PBXFileReference section */
 		1B1B2BAA2C368DAC006A4C1D /* DetectNailViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DetectNailViewController.xib; sourceTree = "<group>"; };
+		1BDA9BB82C3697D5002B62F5 /* DistanceViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DistanceViewController.swift; sourceTree = "<group>"; };
 		553366C32204898800A67647 /* ObjectDetection-CoreMLTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "ObjectDetection-CoreMLTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		553366C52204898800A67647 /* ObjectDetection_CoreMLTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObjectDetection_CoreMLTests.swift; sourceTree = "<group>"; };
 		553366C72204898800A67647 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -104,6 +106,7 @@
 		554F148F220362AB00B828B0 = {
 			isa = PBXGroup;
 			children = (
+				1BDA9BB82C3697D5002B62F5 /* DistanceViewController.swift */,
 				554F149A220362AB00B828B0 /* ObjectDetection-CoreML */,
 				553366C42204898800A67647 /* ObjectDetection-CoreMLTests */,
 				554F1499220362AB00B828B0 /* Products */,
@@ -337,6 +340,7 @@
 				6001853E2C365C4300EB5EC0 /* TabBarController.swift in Sources */,
 				A7F7E3092C2335F700D311EC /* best.mlpackage in Sources */,
 				60F1FF2F2C292F7000AB415E /* DrawingBoundingBoxView.swift in Sources */,
+				1BDA9BB92C3697D5002B62F5 /* DistanceViewController.swift in Sources */,
 				A7E92AA22C22EDE500CDB075 /* yolov8m.mlpackage in Sources */,
 				553366CF220489DD00A67647 /* UIImage+CVPixelBuffer.swift in Sources */,
 				A7E92A9E2C22C94100CDB075 /* yolov5n.mlmodel in Sources */,
