@@ -1,5 +1,5 @@
 //
-//  ViewController.swift
+//  DetectNailViewController.swift
 //  ObjectDetection-CoreML
 //
 //  Created by Huy Dang on 22/6/24.
@@ -13,12 +13,12 @@ import Vision
 import CoreMedia
 import SnapKit
 
-class FirstViewController: UIViewController {
+class DetectNailViewController: UIViewController {
     
     // MARK: - UI Properties
     @IBOutlet weak var videoPreview: UIView!
     @IBOutlet weak var boxesView: DrawingBoundingBoxView!
-    @IBOutlet weak var labelsTableView: UITableView!
+//    @IBOutlet weak var labelsTableView: UITableView!
     
     @IBOutlet weak var inferenceLabel: UILabel!
     @IBOutlet weak var etimeLabel: UILabel!
@@ -163,7 +163,7 @@ class FirstViewController: UIViewController {
 }
 
 // MARK: - VideoCaptureDelegate
-extension FirstViewController: VideoCaptureDelegate {
+extension DetectNailViewController: VideoCaptureDelegate {
     func videoCapture(_ capture: VideoCapture, didCaptureVideoFrame pixelBuffer: CVPixelBuffer?, timestamp: CMTime) {
         if !self.isInferencing, let pixelBuffer = pixelBuffer {
             self.isInferencing = true
@@ -173,7 +173,7 @@ extension FirstViewController: VideoCaptureDelegate {
     }
 }
 
-extension FirstViewController {
+extension DetectNailViewController {
     func predictUsingVision(pixelBuffer: CVPixelBuffer) {
         guard let request = request else { fatalError() }
         self.semaphore.wait()
@@ -187,7 +187,7 @@ extension FirstViewController {
             self.predictions = predictions
             DispatchQueue.main.async {
                 self.boxesView.predictedObjects = predictions
-                self.labelsTableView.reloadData()
+//                self.labelsTableView.reloadData()
                 self.👨‍🔧.🎬🤚()
                 self.isInferencing = false
             }
@@ -199,27 +199,27 @@ extension FirstViewController {
     }
 }
 
-extension FirstViewController: UITableViewDataSource {
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return predictions.count
-    }
-    
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let cell = tableView.dequeueReusableCell(withIdentifier: "InfoCell") else {
-            return UITableViewCell()
-        }
-        
-        let rectString = predictions[indexPath.row].boundingBox.toString(digit: 2)
-        let confidence = predictions[indexPath.row].labels.first?.confidence ?? -1
-        let confidenceString = String(format: "%.3f", confidence)
-        
-        cell.textLabel?.text = predictions[indexPath.row].label ?? "N/A"
-        cell.detailTextLabel?.text = "\(rectString), \(confidenceString)"
-        return cell
-    }
-}
+//extension DetectNailViewController: UITableViewDataSource {
+//    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+//        return predictions.count
+//    }
+//    
+//    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+//        guard let cell = tableView.dequeueReusableCell(withIdentifier: "InfoCell") else {
+//            return UITableViewCell()
+//        }
+//        
+//        let rectString = predictions[indexPath.row].boundingBox.toString(digit: 2)
+//        let confidence = predictions[indexPath.row].labels.first?.confidence ?? -1
+//        let confidenceString = String(format: "%.3f", confidence)
+//        
+//        cell.textLabel?.text = predictions[indexPath.row].label ?? "N/A"
+//        cell.detailTextLabel?.text = "\(rectString), \(confidenceString)"
+//        return cell
+//    }
+//}
 
-extension FirstViewController: 📏Delegate {
+extension DetectNailViewController: 📏Delegate {
     func updateMeasure(inferenceTime: Double, executionTime: Double, fps: Int) {
         DispatchQueue.main.async {
             self.maf1.append(element: Int(inferenceTime * 1000.0))
@@ -251,7 +251,7 @@ class MovingAverageFilter {
     }
 }
 
-extension FirstViewController {
+extension DetectNailViewController {
     func calculateDistanceBetweenPoints(point1: CGPoint, point2: CGPoint) -> CGFloat {
         let dx = point2.x - point1.x
         let dy = point2.y - point1.y

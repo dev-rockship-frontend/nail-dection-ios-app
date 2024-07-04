@@ -14,7 +14,7 @@ class TabBarController: UITabBarController {
         super.viewDidLoad()
 
         // Create instances of view controllers
-        let firstVC = FirstViewController()
+        let firstVC = DetectNailViewController()
         let secondVC = SecondViewController()
 
 
