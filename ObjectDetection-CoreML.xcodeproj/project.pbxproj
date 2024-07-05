@@ -106,7 +106,6 @@
 		554F148F220362AB00B828B0 = {
 			isa = PBXGroup;
 			children = (
-				1BDA9BB82C3697D5002B62F5 /* DistanceViewController.swift */,
 				554F149A220362AB00B828B0 /* ObjectDetection-CoreML */,
 				553366C42204898800A67647 /* ObjectDetection-CoreMLTests */,
 				554F1499220362AB00B828B0 /* Products */,
@@ -128,6 +127,7 @@
 			isa = PBXGroup;
 			children = (
 				554F149B220362AB00B828B0 /* AppDelegate.swift */,
+				1BDA9BB82C3697D5002B62F5 /* DistanceViewController.swift */,
 				554F149D220362AB00B828B0 /* DetectNailViewController.swift */,
 				60F1FF2E2C292F7000AB415E /* DrawingBoundingBoxView.swift */,
 				60F1FF322C294C5300AB415E /* CoordinateSystemView.swift */,
