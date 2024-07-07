@@ -284,12 +284,20 @@
 
 
 
+
 import UIKit
 import Vision
 import CoreMedia
 import SnapKit
+import ARKit
+
 
 class DetectNailViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
+    
+    enum MeasureState {
+        case lengthCalc
+        case breadthCalc
+    }
     
     // MARK: - UI Properties
     @IBOutlet weak var videoPreview: UIView!
@@ -298,9 +306,22 @@ class DetectNailViewController: UIViewController, UITableViewDelegate, UITableVi
     @IBOutlet weak var etimeLabel: UILabel!
     @IBOutlet weak var fpsLabel: UILabel!
     @IBOutlet weak var startButton: UIButton!
+    @IBOutlet weak var sceneView: MeasureSCNView!
     
     var labelsTableView: UITableView!
+    var currentState: MeasureState = MeasureState.lengthCalc
+    var lengthNodes = NSMutableArray()
+    var breadthNodes = NSMutableArray()
+    var lineNodes = NSMutableArray()
     
+    var nodeColor: UIColor {
+        get {
+            return nodeColor(forState: currentState, alphaComponent: 0.7)
+        }
+    }
+    
+    let nodeRadius = CGFloat(0.015)
+
     // MARK: - Core ML model
     lazy var objectDectectionModel = { return try? best() }()
     
@@ -405,6 +426,53 @@ class DetectNailViewController: UIViewController, UITableViewDelegate, UITableVi
         }
     }
     
+    func addPoint() {
+        let screenCenterPoint = CGPoint(x: 214.0, y: 463.0)
+        let pointLocation = view.convert(screenCenterPoint, to: sceneView)
+        
+        guard let hitResultPosition = sceneView.hitResult(forPoint: pointLocation) else {
+            return
+        }
+        
+        print("screenCenterPoint =  \(screenCenterPoint)")
+        print("hitResultPosition =  \(hitResultPosition)")
+        
+        // To prevent multiple taps
+        let nodes = nodesList(forState: currentState)
+        
+        // Create a sphere and set its color using a material
+        let sphere = SCNSphere(radius: nodeRadius)
+        let material = SCNMaterial()
+        material.diffuse.contents = nodeColor
+        sphere.materials = [material]
+        
+        let node = SCNNode(geometry: sphere)
+        node.position = hitResultPosition
+        sceneView.scene.rootNode.addChildNode(node)
+        
+        // Add the sphere to the list.
+        nodes.add(node)
+    }
+
+    
+    private func nodesList(forState state: MeasureState) -> NSMutableArray {
+        switch state {
+        case .lengthCalc:
+            return lengthNodes
+        case .breadthCalc:
+            return breadthNodes
+        }
+    }
+    
+    private func nodeColor(forState state: MeasureState, alphaComponent: CGFloat) -> UIColor {
+        switch state {
+        case .lengthCalc:
+            return UIColor.red.withAlphaComponent(alphaComponent)
+        case .breadthCalc:
+            return UIColor.green.withAlphaComponent(alphaComponent)
+        }
+    }
+    
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         resizePreviewLayer()
@@ -470,6 +538,7 @@ extension DetectNailViewController {
             return UITableViewCell()
         }
         
+        addPoint()
         let rectString = predictions[indexPath.row].boundingBox.toString(digit: 2)
         let confidence = predictions[indexPath.row].labels.first?.confidence ?? -1
         let confidenceString = String(format: "%.3f", confidence)

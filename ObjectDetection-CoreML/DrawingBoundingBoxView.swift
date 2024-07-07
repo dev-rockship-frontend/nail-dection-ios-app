@@ -155,6 +155,8 @@ extension CGRect {
         let hStr = String(format: "%.\(digit)f", height)
         return "(\(xStr), \(yStr))"
     }
+    
+    
 }
 
 extension CGPoint: Hashable {

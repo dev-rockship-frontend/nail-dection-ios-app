@@ -18,6 +18,7 @@
 		554F14AE220362DA00B828B0 /* VideoCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = 554F14AD220362DA00B828B0 /* VideoCapture.swift */; };
 		558918EF22089FFE00F182BA /* Measure.swift in Sources */ = {isa = PBXBuildFile; fileRef = 558918EE22089FFE00F182BA /* Measure.swift */; };
 		6001853E2C365C4300EB5EC0 /* TabBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6001853D2C365C4300EB5EC0 /* TabBarController.swift */; };
+		60DCBF8A2C3ADC860093E1AA /* MeasureSCNView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60DCBF892C3ADC860093E1AA /* MeasureSCNView.swift */; };
 		60F1FF2F2C292F7000AB415E /* DrawingBoundingBoxView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60F1FF2E2C292F7000AB415E /* DrawingBoundingBoxView.swift */; };
 		60F1FF332C294C5300AB415E /* CoordinateSystemView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60F1FF322C294C5300AB415E /* CoordinateSystemView.swift */; };
 		9D8649B0E398AB1AFAA679C0 /* Pods_ObjectDetection_CoreML.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BA19D72205669EC89D9709B6 /* Pods_ObjectDetection_CoreML.framework */; };
@@ -55,6 +56,7 @@
 		558918EE22089FFE00F182BA /* Measure.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Measure.swift; sourceTree = "<group>"; };
 		5802C68CD90B5DD0A7B8CF96 /* Pods-ObjectDetection-CoreML.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ObjectDetection-CoreML.debug.xcconfig"; path = "Target Support Files/Pods-ObjectDetection-CoreML/Pods-ObjectDetection-CoreML.debug.xcconfig"; sourceTree = "<group>"; };
 		6001853D2C365C4300EB5EC0 /* TabBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabBarController.swift; sourceTree = "<group>"; };
+		60DCBF892C3ADC860093E1AA /* MeasureSCNView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeasureSCNView.swift; sourceTree = "<group>"; };
 		60F1FF2E2C292F7000AB415E /* DrawingBoundingBoxView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DrawingBoundingBoxView.swift; sourceTree = "<group>"; };
 		60F1FF322C294C5300AB415E /* CoordinateSystemView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoordinateSystemView.swift; sourceTree = "<group>"; };
 		982713BEE5BD6DD49C986E0B /* Pods-ObjectDetection-CoreML.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ObjectDetection-CoreML.release.xcconfig"; path = "Target Support Files/Pods-ObjectDetection-CoreML/Pods-ObjectDetection-CoreML.release.xcconfig"; sourceTree = "<group>"; };
@@ -138,6 +140,7 @@
 				60F1FF342C296A6000AB415E /* Resources */,
 				71B8322322E2B0BC00207D05 /* ultils */,
 				71B8322222E2B0B200207D05 /* mlmodel */,
+				60DCBF892C3ADC860093E1AA /* MeasureSCNView.swift */,
 			);
 			path = "ObjectDetection-CoreML";
 			sourceTree = "<group>";
@@ -346,6 +349,7 @@
 				A7E92A9E2C22C94100CDB075 /* yolov5n.mlmodel in Sources */,
 				554F14AE220362DA00B828B0 /* VideoCapture.swift in Sources */,
 				554F149C220362AB00B828B0 /* AppDelegate.swift in Sources */,
+				60DCBF8A2C3ADC860093E1AA /* MeasureSCNView.swift in Sources */,
 				60F1FF332C294C5300AB415E /* CoordinateSystemView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

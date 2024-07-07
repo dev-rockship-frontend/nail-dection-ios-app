@@ -14,6 +14,7 @@
                 <outlet property="etimeLabel" destination="VLp-Vp-adv" id="Haz-sy-fpI"/>
                 <outlet property="fpsLabel" destination="Tq4-1V-qkn" id="B6i-E5-Tm9"/>
                 <outlet property="inferenceLabel" destination="e3U-hK-ukp" id="uUZ-03-p55"/>
+                <outlet property="sceneView" destination="ciS-TK-tQA" id="xFa-CM-wTS"/>
                 <outlet property="videoPreview" destination="YxX-l3-RMB" id="wPI-hl-qih"/>
                 <outlet property="view" destination="bnh-c7-uWY" id="k2L-LL-qfp"/>
             </connections>
@@ -23,6 +24,9 @@
             <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <subviews>
+                <arscnView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ciS-TK-tQA" customClass="MeasureSCNView" customModule="Measure" customModuleProvider="target">
+                    <rect key="frame" x="0.0" y="59" width="393" height="544"/>
+                </arscnView>
                 <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="YxX-l3-RMB">
                     <rect key="frame" x="0.0" y="79" width="393" height="524"/>
                     <color key="backgroundColor" red="0.86274509799999999" green="0.63529411759999999" blue="0.86274509799999999" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -96,11 +100,15 @@
                 <constraint firstItem="aIA-5h-jbk" firstAttribute="top" secondItem="YxX-l3-RMB" secondAttribute="bottom" id="CSI-tz-rZZ"/>
                 <constraint firstItem="bQf-Wv-aCr" firstAttribute="trailing" secondItem="aIA-5h-jbk" secondAttribute="trailing" id="DPS-7b-pCG"/>
                 <constraint firstItem="aIA-5h-jbk" firstAttribute="leading" secondItem="bQf-Wv-aCr" secondAttribute="leading" id="IKQ-i1-9BG"/>
+                <constraint firstItem="ciS-TK-tQA" firstAttribute="leading" secondItem="bQf-Wv-aCr" secondAttribute="leading" id="J3g-9v-yHx"/>
                 <constraint firstItem="vqc-V1-CXa" firstAttribute="height" secondItem="YxX-l3-RMB" secondAttribute="height" id="LVL-oI-Tuh"/>
                 <constraint firstAttribute="trailing" secondItem="YxX-l3-RMB" secondAttribute="trailing" id="Lcv-yP-82C"/>
                 <constraint firstItem="c0x-17-jhT" firstAttribute="top" secondItem="bQf-Wv-aCr" secondAttribute="top" id="MMb-AS-ov5"/>
+                <constraint firstItem="ciS-TK-tQA" firstAttribute="top" secondItem="bQf-Wv-aCr" secondAttribute="top" id="PPA-43-ntu"/>
+                <constraint firstItem="ciS-TK-tQA" firstAttribute="trailing" secondItem="bQf-Wv-aCr" secondAttribute="trailing" id="QZK-9w-sS3"/>
                 <constraint firstAttribute="trailing" secondItem="c0x-17-jhT" secondAttribute="trailing" id="U1Q-xc-cij"/>
                 <constraint firstItem="vqc-V1-CXa" firstAttribute="width" secondItem="YxX-l3-RMB" secondAttribute="width" id="YwE-1L-uiK"/>
+                <constraint firstItem="ciS-TK-tQA" firstAttribute="bottom" secondItem="YxX-l3-RMB" secondAttribute="bottom" id="Zcr-Te-sfJ"/>
                 <constraint firstItem="vqc-V1-CXa" firstAttribute="centerY" secondItem="YxX-l3-RMB" secondAttribute="centerY" id="csH-sZ-7nM"/>
                 <constraint firstItem="YxX-l3-RMB" firstAttribute="leading" secondItem="bQf-Wv-aCr" secondAttribute="leading" id="eGA-tc-lmH"/>
                 <constraint firstItem="vqc-V1-CXa" firstAttribute="leading" secondItem="YxX-l3-RMB" secondAttribute="leading" id="vol-et-IP8"/>
