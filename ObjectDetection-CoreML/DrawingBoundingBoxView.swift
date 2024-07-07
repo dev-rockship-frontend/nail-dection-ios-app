@@ -148,11 +148,12 @@ extension VNRecognizedObjectObservation {
 
 extension CGRect {
     func toString(digit: Int) -> String {
-        let xStr = String(format: "%.\(digit)f", origin.x)
-        let yStr = String(format: "%.\(digit)f", origin.y)
+        let widthScreen = self.origin.x
+        let xStr = String(format: "%.\(digit)f", origin.x - 0.5)
+        let yStr = String(format: "%.\(digit)f", origin.y - 0.5)
         let wStr = String(format: "%.\(digit)f", width)
         let hStr = String(format: "%.\(digit)f", height)
-        return "(\(xStr), \(yStr), \(wStr), \(hStr))"
+        return "(\(xStr), \(yStr))"
     }
 }
 

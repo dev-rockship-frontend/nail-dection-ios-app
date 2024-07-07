@@ -127,8 +127,10 @@
 			isa = PBXGroup;
 			children = (
 				554F149B220362AB00B828B0 /* AppDelegate.swift */,
-				1BDA9BB82C3697D5002B62F5 /* DistanceViewController.swift */,
+				6001853D2C365C4300EB5EC0 /* TabBarController.swift */,
 				554F149D220362AB00B828B0 /* DetectNailViewController.swift */,
+				1B1B2BAA2C368DAC006A4C1D /* DetectNailViewController.xib */,
+				1BDA9BB82C3697D5002B62F5 /* DistanceViewController.swift */,
 				60F1FF2E2C292F7000AB415E /* DrawingBoundingBoxView.swift */,
 				60F1FF322C294C5300AB415E /* CoordinateSystemView.swift */,
 				554F14A4220362AC00B828B0 /* LaunchScreen.storyboard */,
@@ -136,8 +138,6 @@
 				60F1FF342C296A6000AB415E /* Resources */,
 				71B8322322E2B0BC00207D05 /* ultils */,
 				71B8322222E2B0B200207D05 /* mlmodel */,
-				6001853D2C365C4300EB5EC0 /* TabBarController.swift */,
-				1B1B2BAA2C368DAC006A4C1D /* DetectNailViewController.xib */,
 			);
 			path = "ObjectDetection-CoreML";
 			sourceTree = "<group>";
