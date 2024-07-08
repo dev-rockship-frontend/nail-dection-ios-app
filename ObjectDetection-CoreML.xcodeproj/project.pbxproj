@@ -19,6 +19,7 @@
 		558918EF22089FFE00F182BA /* Measure.swift in Sources */ = {isa = PBXBuildFile; fileRef = 558918EE22089FFE00F182BA /* Measure.swift */; };
 		6001853E2C365C4300EB5EC0 /* TabBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6001853D2C365C4300EB5EC0 /* TabBarController.swift */; };
 		60DCBF8A2C3ADC860093E1AA /* MeasureSCNView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60DCBF892C3ADC860093E1AA /* MeasureSCNView.swift */; };
+		60DCBF8C2C3AF68C0093E1AA /* SCNSphere+Init.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60DCBF8B2C3AF68C0093E1AA /* SCNSphere+Init.swift */; };
 		60F1FF2F2C292F7000AB415E /* DrawingBoundingBoxView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60F1FF2E2C292F7000AB415E /* DrawingBoundingBoxView.swift */; };
 		60F1FF332C294C5300AB415E /* CoordinateSystemView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60F1FF322C294C5300AB415E /* CoordinateSystemView.swift */; };
 		9D8649B0E398AB1AFAA679C0 /* Pods_ObjectDetection_CoreML.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BA19D72205669EC89D9709B6 /* Pods_ObjectDetection_CoreML.framework */; };
@@ -57,6 +58,7 @@
 		5802C68CD90B5DD0A7B8CF96 /* Pods-ObjectDetection-CoreML.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ObjectDetection-CoreML.debug.xcconfig"; path = "Target Support Files/Pods-ObjectDetection-CoreML/Pods-ObjectDetection-CoreML.debug.xcconfig"; sourceTree = "<group>"; };
 		6001853D2C365C4300EB5EC0 /* TabBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabBarController.swift; sourceTree = "<group>"; };
 		60DCBF892C3ADC860093E1AA /* MeasureSCNView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeasureSCNView.swift; sourceTree = "<group>"; };
+		60DCBF8B2C3AF68C0093E1AA /* SCNSphere+Init.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SCNSphere+Init.swift"; sourceTree = "<group>"; };
 		60F1FF2E2C292F7000AB415E /* DrawingBoundingBoxView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DrawingBoundingBoxView.swift; sourceTree = "<group>"; };
 		60F1FF322C294C5300AB415E /* CoordinateSystemView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoordinateSystemView.swift; sourceTree = "<group>"; };
 		982713BEE5BD6DD49C986E0B /* Pods-ObjectDetection-CoreML.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ObjectDetection-CoreML.release.xcconfig"; path = "Target Support Files/Pods-ObjectDetection-CoreML/Pods-ObjectDetection-CoreML.release.xcconfig"; sourceTree = "<group>"; };
@@ -131,6 +133,7 @@
 				554F149B220362AB00B828B0 /* AppDelegate.swift */,
 				6001853D2C365C4300EB5EC0 /* TabBarController.swift */,
 				554F149D220362AB00B828B0 /* DetectNailViewController.swift */,
+				60DCBF8B2C3AF68C0093E1AA /* SCNSphere+Init.swift */,
 				1B1B2BAA2C368DAC006A4C1D /* DetectNailViewController.xib */,
 				1BDA9BB82C3697D5002B62F5 /* DistanceViewController.swift */,
 				60F1FF2E2C292F7000AB415E /* DrawingBoundingBoxView.swift */,
@@ -339,6 +342,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				554F149E220362AB00B828B0 /* DetectNailViewController.swift in Sources */,
+				60DCBF8C2C3AF68C0093E1AA /* SCNSphere+Init.swift in Sources */,
 				558918EF22089FFE00F182BA /* Measure.swift in Sources */,
 				6001853E2C365C4300EB5EC0 /* TabBarController.swift in Sources */,
 				A7F7E3092C2335F700D311EC /* best.mlpackage in Sources */,
