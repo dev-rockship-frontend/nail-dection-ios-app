@@ -13,12 +13,16 @@ import ARKit
 class ShowNailController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
     
     var nails: [VNRecognizedObjectObservation]
+    var screenshot: UIImage!
     var boxesView: DrawingBoundingBoxView!
-    var videoPreview: UIView!
     var sceneView: ARSCNView!
+    var imageView: UIImageView!
+    var frame: CGRect
     
-    init(nails: [VNRecognizedObjectObservation]) {
+    init(nails: [VNRecognizedObjectObservation], screenshot: UIImage, frame: CGRect) {
         self.nails = nails
+        self.screenshot = screenshot
+        self.frame = frame
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -30,38 +34,33 @@ class ShowNailController: UIViewController, ARSCNViewDelegate, ARSessionDelegate
         super.viewDidLoad()
         
         view.backgroundColor = .white
-        
-        sceneView = ARSCNView()
+        sceneView = ARSCNView(frame: frame)
         view.addSubview(sceneView)
         
         sceneView.delegate = self
         sceneView.session.delegate = self
         
-        sceneView.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            sceneView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            sceneView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
-            sceneView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            sceneView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
-        ])
+        imageView = UIImageView()
+        imageView.frame = self.frame
+        imageView.image = screenshot  // Set your image here
+        view.addSubview(imageView)
         
+        // Start AR session
         startARSession()
-        
-        boxesView = DrawingBoundingBoxView(frame: view.bounds)
+        boxesView = DrawingBoundingBoxView(frame: frame)
         boxesView.backgroundColor = .clear
         view.addSubview(boxesView)
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
+        // Configure 3D distance after a delay (example: 3 seconds)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
             self.boxesView.isDistance3D = true
             self.boxesView.predictedObjects = self.nails
             self.boxesView.sceneView = self.sceneView
-            
         }
         
-//        boxesView.predictedObjects = nails
-//        boxesView.sceneView = sceneView
+        // Create UIImageView
+        
     }
-
     
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
@@ -72,8 +71,4 @@ class ShowNailController: UIViewController, ARSCNViewDelegate, ARSessionDelegate
         let configuration = ARWorldTrackingConfiguration()
         sceneView.session.run(configuration, options: [.resetTracking, .removeExistingAnchors])
     }
-    
-    
 }
-
-
