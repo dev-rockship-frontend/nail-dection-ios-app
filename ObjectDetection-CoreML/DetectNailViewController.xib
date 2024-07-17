@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="32700.99.1234" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="22505" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina6_12" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="22685"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="22504"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -15,7 +15,6 @@
                 <outlet property="fpsLabel" destination="Tq4-1V-qkn" id="B6i-E5-Tm9"/>
                 <outlet property="inferenceLabel" destination="e3U-hK-ukp" id="uUZ-03-p55"/>
                 <outlet property="sceneView" destination="ciS-TK-tQA" id="xFa-CM-wTS"/>
-                <outlet property="testImageView" destination="HEN-pS-Sal" id="1Vd-HL-M0f"/>
                 <outlet property="videoPreview" destination="YxX-l3-RMB" id="wPI-hl-qih"/>
                 <outlet property="view" destination="bnh-c7-uWY" id="k2L-LL-qfp"/>
             </connections>
@@ -88,37 +87,22 @@
                         <constraint firstAttribute="height" constant="20" id="WZ6-jI-3Sc"/>
                     </constraints>
                 </view>
-                <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="HEN-pS-Sal">
-                    <rect key="frame" x="76" y="362" width="240" height="128"/>
-                </imageView>
-                <tableView clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="InfoCell" alwaysBounceVertical="YES" style="plain" separatorStyle="default" rowHeight="24" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="aIA-5h-jbk">
-                    <rect key="frame" x="0.0" y="603" width="393" height="249"/>
-                    <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                </tableView>
             </subviews>
             <viewLayoutGuide key="safeArea" id="bQf-Wv-aCr"/>
             <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
             <constraints>
                 <constraint firstItem="c0x-17-jhT" firstAttribute="leading" secondItem="bQf-Wv-aCr" secondAttribute="leading" id="1Fw-Nd-Oir"/>
-                <constraint firstItem="HEN-pS-Sal" firstAttribute="leading" secondItem="bQf-Wv-aCr" secondAttribute="leading" constant="76" id="4wn-vU-k3r"/>
-                <constraint firstAttribute="bottom" secondItem="aIA-5h-jbk" secondAttribute="bottom" id="CJE-dJ-PE3"/>
-                <constraint firstItem="aIA-5h-jbk" firstAttribute="top" secondItem="YxX-l3-RMB" secondAttribute="bottom" id="CSI-tz-rZZ"/>
-                <constraint firstItem="bQf-Wv-aCr" firstAttribute="trailing" secondItem="aIA-5h-jbk" secondAttribute="trailing" id="DPS-7b-pCG"/>
-                <constraint firstItem="aIA-5h-jbk" firstAttribute="leading" secondItem="bQf-Wv-aCr" secondAttribute="leading" id="IKQ-i1-9BG"/>
                 <constraint firstItem="ciS-TK-tQA" firstAttribute="leading" secondItem="bQf-Wv-aCr" secondAttribute="leading" id="J3g-9v-yHx"/>
                 <constraint firstItem="vqc-V1-CXa" firstAttribute="height" secondItem="YxX-l3-RMB" secondAttribute="height" id="LVL-oI-Tuh"/>
                 <constraint firstAttribute="trailing" secondItem="YxX-l3-RMB" secondAttribute="trailing" id="Lcv-yP-82C"/>
                 <constraint firstItem="c0x-17-jhT" firstAttribute="top" secondItem="bQf-Wv-aCr" secondAttribute="top" id="MMb-AS-ov5"/>
                 <constraint firstItem="ciS-TK-tQA" firstAttribute="top" secondItem="bQf-Wv-aCr" secondAttribute="top" id="PPA-43-ntu"/>
-                <constraint firstItem="HEN-pS-Sal" firstAttribute="top" secondItem="c0x-17-jhT" secondAttribute="bottom" constant="283" id="QND-3N-h1R"/>
                 <constraint firstItem="ciS-TK-tQA" firstAttribute="trailing" secondItem="bQf-Wv-aCr" secondAttribute="trailing" id="QZK-9w-sS3"/>
                 <constraint firstAttribute="trailing" secondItem="c0x-17-jhT" secondAttribute="trailing" id="U1Q-xc-cij"/>
                 <constraint firstItem="vqc-V1-CXa" firstAttribute="width" secondItem="YxX-l3-RMB" secondAttribute="width" id="YwE-1L-uiK"/>
                 <constraint firstItem="ciS-TK-tQA" firstAttribute="bottom" secondItem="YxX-l3-RMB" secondAttribute="bottom" id="Zcr-Te-sfJ"/>
                 <constraint firstItem="vqc-V1-CXa" firstAttribute="centerY" secondItem="YxX-l3-RMB" secondAttribute="centerY" id="csH-sZ-7nM"/>
                 <constraint firstItem="YxX-l3-RMB" firstAttribute="leading" secondItem="bQf-Wv-aCr" secondAttribute="leading" id="eGA-tc-lmH"/>
-                <constraint firstItem="aIA-5h-jbk" firstAttribute="top" secondItem="HEN-pS-Sal" secondAttribute="bottom" constant="113" id="jfF-Se-MGf"/>
-                <constraint firstItem="bQf-Wv-aCr" firstAttribute="trailing" secondItem="HEN-pS-Sal" secondAttribute="trailing" constant="77" id="jwi-po-O8D"/>
                 <constraint firstItem="vqc-V1-CXa" firstAttribute="leading" secondItem="YxX-l3-RMB" secondAttribute="leading" id="vol-et-IP8"/>
                 <constraint firstItem="YxX-l3-RMB" firstAttribute="top" secondItem="c0x-17-jhT" secondAttribute="bottom" id="vps-pw-M1K"/>
             </constraints>

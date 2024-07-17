@@ -13,7 +13,7 @@ import ARKit
 class DrawingBoundingBoxView: UIView {
     
     var isDistance3D: Bool = false
-    
+    var rangeDegree: Double = 5.0
     enum Axis {
         case x
         case y
@@ -135,9 +135,13 @@ class DrawingBoundingBoxView: UIView {
             let a = isAngleOfDeviationGreaterThanFiveDegrees(x1: x1, y1: y1, x2: x2, y2: y2, withRespectTo: .x).rounded()
             let b = isAngleOfDeviationGreaterThanFiveDegrees(x1: x1, y1: y1, x2: x2, y2: y2, withRespectTo: .y).rounded()
 
-            if a <= 10 || b <= 10 {
+            print(rangeDegree)
+            if a <= rangeDegree || b <= rangeDegree {
                 context.move(to: edge.0)
                 context.addLine(to: edge.1)
+//                let midpoint = CGPoint(x: (edge.0.x + edge.1.x) / 2, y: (edge.0.y + edge.1.y) / 2)
+//                displayDistanceLabel(at: midpoint, distance: "\(a), \(b)")
+                var textString = "\(a), \(b)"
                 
                 if isDistance3D {
                     let point1_3D = convertBoundingBoxTo3D(edge.0)
@@ -145,12 +149,16 @@ class DrawingBoundingBoxView: UIView {
                     if let point1_3D = point1_3D, let point2_3D = point2_3D {
                         let distance = calculateDistance(from: point1_3D, to: point2_3D)
                         
-                        let midpoint = CGPoint(x: (edge.0.x + edge.1.x) / 2, y: (edge.0.y + edge.1.y) / 2)
-                        displayDistanceLabel(at: midpoint, distance: "\(Int(distance * 100))")
+                        textString = "\(Int(distance * 1000))"
+//                        let midpoint = CGPoint(x: (edge.0.x + edge.1.x) / 2, y: (edge.0.y + edge.1.y) / 2)
+//                        displayDistanceLabel(at: midpoint, distance: "\(Int(distance * 1000))")
                     } else {
                         print("Failed to get 3D coordinates for nails.")
                     }
                 }
+                
+                let midpoint = CGPoint(x: (edge.0.x + edge.1.x) / 2, y: (edge.0.y + edge.1.y) / 2)
+                displayDistanceLabel(at: midpoint, distance: textString)
             }
         }
         context.strokePath()

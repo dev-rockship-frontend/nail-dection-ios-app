@@ -28,16 +28,18 @@ class DetectNailViewController: UIViewController, UITableViewDelegate, UITableVi
     @IBOutlet weak var etimeLabel: UILabel!
     @IBOutlet weak var fpsLabel: UILabel!
     @IBOutlet weak var startButton: UIButton!
-    @IBOutlet weak var testImageView: UIImageView!
     @IBOutlet weak var sceneView: MeasureSCNView!
     
-    var labelsTableView: UITableView!
+//    var labelsTableView: UITableView!
     var currentState: MeasureState = MeasureState.lengthCalc
     var lengthNodes = NSMutableArray()
     var breadthNodes = NSMutableArray()
     var lineNodes = NSMutableArray()
     var captureButton: UIButton!
     
+    var numberTextField: UITextField!
+    var rangeDegreeButton: UIButton!
+    var rangeDegree: Double = 5.0
     var nodeColor: UIColor {
         get {
             return nodeColor(forState: currentState, alphaComponent: 0.7)
@@ -56,7 +58,16 @@ class DetectNailViewController: UIViewController, UITableViewDelegate, UITableVi
     private lazy var labelSliderConf: UILabel = {
         let label = UILabel()
         label.text = "0.25 Confidence Threshold"
-        label.textColor = .white
+        label.textColor = .black
+        label.font = UIFont.systemFont(ofSize: 12)
+        return label
+    }()
+    
+    private lazy var labelRangeOfDegree: UILabel = {
+        let label = UILabel()
+        label.text = "Range of degree"
+        label.textColor = .black
+        label.font = UIFont.systemFont(ofSize: 12)
         return label
     }()
     
@@ -93,8 +104,8 @@ class DetectNailViewController: UIViewController, UITableViewDelegate, UITableVi
             print("videoPreview is nil")
             return
         }
-        
-        setupLabelsTableView()
+        view.backgroundColor = .white
+//        setupLabelsTableView()
         setUpModel()
         setUpCamera()
         
@@ -119,9 +130,18 @@ class DetectNailViewController: UIViewController, UITableViewDelegate, UITableVi
             make.width.equalTo(171)
         }
         
+        view.addSubview(labelRangeOfDegree)
+        
+        labelRangeOfDegree.snp.makeConstraints { make in
+            make.top.equalTo(labelSliderConf.snp.top)
+            make.trailing.equalToSuperview().offset(-12)
+        }
+        
+        setupNumberTextField()
+        setupTapGesture()
     }
     
-    func setupLabelsTableView() {
+/*    func setupLabelsTableView() {
         labelsTableView = UITableView()
         labelsTableView.delegate = self
         labelsTableView.dataSource = self
@@ -134,20 +154,72 @@ class DetectNailViewController: UIViewController, UITableViewDelegate, UITableVi
             make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom)
         }
     }
+ */
     
     func setupResetButton() {
         captureButton = UIButton(type: .system)
         captureButton.translatesAutoresizingMaskIntoConstraints = false
         captureButton.setTitle("Capture", for: .normal)
+        captureButton.layer.borderWidth = 1
+        captureButton.layer.cornerRadius = 5
+        captureButton.layer.borderColor = UIColor.blue.cgColor
         captureButton.addTarget(self, action: #selector(captureAnchors), for: .touchUpInside)
         view.addSubview(captureButton)
         
         captureButton.snp.makeConstraints { make in
-            make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom).offset(-50)
+            make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom)
             make.centerX.equalToSuperview()
-            make.width.equalTo(60)
-            make.height.equalTo(40)
+            make.width.equalTo(80)
+            make.height.equalTo(35)
         }
+        
+        
+    }
+    
+    func setupNumberTextField() {
+        numberTextField = UITextField()
+        numberTextField.layer.borderWidth = 1
+        numberTextField.layer.borderColor = UIColor.black.cgColor
+        numberTextField.layer.cornerRadius = 4
+        numberTextField.borderStyle = .roundedRect
+        numberTextField.keyboardType = .numberPad
+//        numberTextField.placeholder = "Enter number"
+        numberTextField.backgroundColor = .white
+        numberTextField.textColor = .black
+        numberTextField.text = "5"
+        view.addSubview(numberTextField)
+        
+        numberTextField.snp.makeConstraints { make in
+            make.trailing.equalTo(labelRangeOfDegree.snp.trailing)
+            make.top.equalTo(sliderConf.snp.top)
+            make.width.equalTo(60)
+            make.height.equalTo(30)
+        }
+        
+        rangeDegreeButton = UIButton(type: .system)
+        rangeDegreeButton.translatesAutoresizingMaskIntoConstraints = false
+        rangeDegreeButton.setTitle("Done", for: .normal)
+        rangeDegreeButton.layer.borderWidth = 1
+        rangeDegreeButton.layer.cornerRadius = 5
+        rangeDegreeButton.layer.borderColor = UIColor.blue.cgColor
+        rangeDegreeButton.addTarget(self, action: #selector(rangeDegreeButtonAnchors), for: .touchUpInside)
+        view.addSubview(rangeDegreeButton)
+        
+        rangeDegreeButton.snp.makeConstraints { make in
+            make.top.equalTo(numberTextField.snp.bottom).offset(10)
+            make.trailing.equalTo(numberTextField.snp.trailing)
+            make.width.equalTo(60)
+            make.height.equalTo(30)
+        }
+    }
+    
+    func setupTapGesture() {
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
+        view.addGestureRecognizer(tapGesture)
+    }
+    
+    @objc func dismissKeyboard() {
+        view.endEditing(true)
     }
     
     
@@ -157,6 +229,14 @@ class DetectNailViewController: UIViewController, UITableViewDelegate, UITableVi
 //        let vc = ShowNailController(nails: predictions)
 //        
 //        present(vc, animated: true)   
+    }
+    
+    
+    @objc func rangeDegreeButtonAnchors() {
+        let numberText = numberTextField.text ?? ""
+        print("Number entered: \(numberText)")
+        rangeDegree = Double(String(numberText)) ?? 5
+//        present(vc, animated: true)
     }
     
     @objc func sliderChanged(_ sender: Any) {
@@ -217,34 +297,6 @@ class DetectNailViewController: UIViewController, UITableViewDelegate, UITableVi
         }
     }
     
-    func addPoint() {
-        let screenCenterPoint = CGPoint(x: 214.0, y: 463.0)
-        let pointLocation = view.convert(screenCenterPoint, to: sceneView)
-        
-        guard let hitResultPosition = sceneView.hitResult(forPoint: pointLocation) else {
-            return
-        }
-        
-        print("screenCenterPoint =  \(screenCenterPoint)")
-        print("hitResultPosition =  \(hitResultPosition)")
-        
-        // To prevent multiple taps
-        let nodes = nodesList(forState: currentState)
-        
-        // Create a sphere and set its color using a material
-        let sphere = SCNSphere(radius: nodeRadius)
-        let material = SCNMaterial()
-        material.diffuse.contents = nodeColor
-        sphere.materials = [material]
-        
-        let node = SCNNode(geometry: sphere)
-        node.position = hitResultPosition
-        sceneView.scene.rootNode.addChildNode(node)
-        
-        // Add the sphere to the list.
-        nodes.add(node)
-    }
-
     
     private func nodesList(forState state: MeasureState) -> NSMutableArray {
         switch state {
@@ -309,7 +361,8 @@ extension DetectNailViewController {
             //            self.nails = predictions
             DispatchQueue.main.async {
                 self.boxesView.predictedObjects = predictions
-                self.labelsTableView.reloadData()
+                self.boxesView.rangeDegree = self.rangeDegree
+//                self.labelsTableView.reloadData()
                 self.👨‍🔧.🎬🤚()
                 self.isInferencing = false
             }
@@ -336,7 +389,7 @@ extension DetectNailViewController {
         let confidence = predictions[indexPath.row].labels.first?.confidence ?? -1
         let confidenceString = String(format: "%.3f", confidence)
         
-        cell.textLabel?.text = "Point \(indexPath.row + 1): \(rectString)"
+//        cell.textLabel?.text = "Point \(indexPath.row + 1): \(rectString)"
         return cell
     }
 }
@@ -401,10 +454,6 @@ extension DetectNailViewController: AVCapturePhotoCaptureDelegate {
             
             print("Image: \(image)")
             
-            testImageView.image = image
-
-            print("Image: \(image)")
-
             let vc = ShowNailController(nails: self.predictions, screenshot: image, frame: videoPreview.frame)
             self.present(vc, animated: true)
         } else {
