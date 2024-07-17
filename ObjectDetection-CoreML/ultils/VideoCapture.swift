@@ -22,6 +22,7 @@ public class VideoCapture: NSObject {
     let captureSession = AVCaptureSession()
     let videoOutput = AVCaptureVideoDataOutput()
     let queue = DispatchQueue(label: "com.tucan9389.camera-queue")
+    var cameraOutput = AVCapturePhotoOutput()
     
     var lastTimestamp = CMTime()
     
@@ -52,6 +53,10 @@ public class VideoCapture: NSObject {
         
         if captureSession.canAddInput(videoInput) {
             captureSession.addInput(videoInput)
+        }
+        
+        if captureSession.canAddOutput(cameraOutput) {
+            captureSession.addOutput(cameraOutput)
         }
         
         let previewLayer = AVCaptureVideoPreviewLayer(session: captureSession)

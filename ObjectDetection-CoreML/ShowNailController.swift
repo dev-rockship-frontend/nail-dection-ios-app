@@ -15,10 +15,18 @@ class ShowNailController: UIViewController, ARSCNViewDelegate, ARSessionDelegate
     var nails: [VNRecognizedObjectObservation]
     var boxesView: DrawingBoundingBoxView!
     var videoPreview: UIView!
+    private lazy var imageBackground: UIImageView = {
+        let imageView = UIImageView()
+        return imageView
+    }()
+    var background: UIImage
     var sceneView: ARSCNView!
     
-    init(nails: [VNRecognizedObjectObservation]) {
+    
+    
+    init(nails: [VNRecognizedObjectObservation], background: UIImage) {
         self.nails = nails
+        self.background = background
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -45,6 +53,17 @@ class ShowNailController: UIViewController, ARSCNViewDelegate, ARSessionDelegate
             sceneView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             sceneView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
         ])
+        
+        view.addSubview(imageBackground)
+        imageBackground.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            imageBackground.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            imageBackground.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
+            imageBackground.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            imageBackground.trailingAnchor.constraint(equalTo: view.trailingAnchor)
+        ])
+        
+        imageBackground.image = background
         
         startARSession()
         
@@ -73,11 +92,7 @@ class ShowNailController: UIViewController, ARSCNViewDelegate, ARSessionDelegate
         let configuration = ARWorldTrackingConfiguration()
         configuration.planeDetection = .horizontal
         sceneView.session.run(configuration, options: [.resetTracking, .removeExistingAnchors])
-        
-        if let camera = sceneView.pointOfView?.camera {
-                    camera.fieldOfView = 60 // Adjust this value as necessary
-                    camera.usesOrthographicProjection = false // Ensure orthographic projection is off
-                }
+    
     }
     
     
