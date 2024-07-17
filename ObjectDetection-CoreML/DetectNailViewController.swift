@@ -11,6 +11,7 @@ import Vision
 import CoreMedia
 import SnapKit
 import ARKit
+import Photos
 
 
 class DetectNailViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
@@ -27,6 +28,7 @@ class DetectNailViewController: UIViewController, UITableViewDelegate, UITableVi
     @IBOutlet weak var etimeLabel: UILabel!
     @IBOutlet weak var fpsLabel: UILabel!
     @IBOutlet weak var startButton: UIButton!
+    @IBOutlet weak var testImageView: UIImageView!
     @IBOutlet weak var sceneView: MeasureSCNView!
     
     var labelsTableView: UITableView!
@@ -35,13 +37,29 @@ class DetectNailViewController: UIViewController, UITableViewDelegate, UITableVi
     var breadthNodes = NSMutableArray()
     var lineNodes = NSMutableArray()
     var captureButton: UIButton!
-//    var nails: [VNRecognizedObjectObservation] = []
     
     var nodeColor: UIColor {
         get {
             return nodeColor(forState: currentState, alphaComponent: 0.7)
         }
     }
+    
+    private lazy var sliderConf: UISlider = {
+        let slider = UISlider()
+        slider.minimumValue = 0.01
+        slider.maximumValue = 1
+        slider.value = 0.25
+        slider.addTarget(self, action: #selector(sliderChanged), for: .valueChanged)
+        return slider
+    }()
+    
+    private lazy var labelSliderConf: UILabel = {
+        let label = UILabel()
+        label.text = "0.25 Confidence Threshold"
+        label.textColor = .white
+        return label
+    }()
+    
     
     let nodeRadius = CGFloat(0.015)
 
@@ -84,6 +102,23 @@ class DetectNailViewController: UIViewController, UITableViewDelegate, UITableVi
         setupCoordinateSystemView()
         
         setupResetButton()
+        
+        view.addSubview(labelSliderConf)
+        
+        labelSliderConf.snp.makeConstraints { make in
+            make.top.equalTo(videoPreview.snp.bottom).offset(10)
+            make.leading.equalToSuperview().offset(12)
+        }
+        
+        view.addSubview(sliderConf)
+        
+        sliderConf.snp.makeConstraints { make in
+            make.top.equalTo(labelSliderConf.snp.bottom).offset(10)
+            make.leading.equalToSuperview().offset(12)
+            make.height.equalTo(30)
+            make.width.equalTo(171)
+        }
+        
     }
     
     func setupLabelsTableView() {
@@ -110,7 +145,7 @@ class DetectNailViewController: UIViewController, UITableViewDelegate, UITableVi
         captureButton.snp.makeConstraints { make in
             make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom).offset(-50)
             make.centerX.equalToSuperview()
-            make.width.equalTo(48)
+            make.width.equalTo(60)
             make.height.equalTo(40)
         }
     }
@@ -119,6 +154,15 @@ class DetectNailViewController: UIViewController, UITableViewDelegate, UITableVi
     @objc func captureAnchors() {
         let settings = AVCapturePhotoSettings()
         self.videoCapture?.cameraOutput.capturePhoto(with: settings, delegate: self as AVCapturePhotoCaptureDelegate)
+//        let vc = ShowNailController(nails: predictions)
+//        
+//        present(vc, animated: true)   
+    }
+    
+    @objc func sliderChanged(_ sender: Any) {
+        let conf = Double(round(100 * sliderConf.value)) / 100
+        self.labelSliderConf.text = String(conf) + " Confidence Threshold"
+        visionModel?.featureProvider = ThresholdProvider(iouThreshold: 0.45, confidenceThreshold: conf)
     }
     
     override func didReceiveMemoryWarning() {
@@ -139,6 +183,7 @@ class DetectNailViewController: UIViewController, UITableViewDelegate, UITableVi
         guard let objectDectectionModel = objectDectectionModel else { fatalError("fail to load the model") }
         if let visionModel = try? VNCoreMLModel(for: objectDectectionModel.model) {
             self.visionModel = visionModel
+            self.visionModel?.featureProvider = ThresholdProvider()
             request = VNCoreMLRequest(model: visionModel, completionHandler: visionRequestDidComplete)
             request?.imageCropAndScaleOption = .scaleFill
         } else {
@@ -353,6 +398,10 @@ extension DetectNailViewController: AVCapturePhotoCaptureDelegate {
             let dataProvider = CGDataProvider(data: dataImage as CFData)
             let cgImageRef: CGImage! = CGImage(jpegDataProviderSource: dataProvider!, decode: nil, shouldInterpolate: true, intent: .defaultIntent)
             let image = UIImage(cgImage: cgImageRef, scale: 0.5, orientation: UIImage.Orientation.right)
+            
+            print("Image: \(image)")
+            
+            testImageView.image = image
 
             print("Image: \(image)")
 

@@ -15,6 +15,12 @@ class ShowNailController: UIViewController, ARSCNViewDelegate, ARSessionDelegate
     var nails: [VNRecognizedObjectObservation]
     var screenshot: UIImage!
     var boxesView: DrawingBoundingBoxView!
+    var videoPreview: UIView!
+    private lazy var imageBackground: UIImageView = {
+        let imageView = UIImageView()
+        return imageView
+    }()
+    
     var sceneView: ARSCNView!
     var imageView: UIImageView!
     var frame: CGRect
@@ -46,6 +52,15 @@ class ShowNailController: UIViewController, ARSCNViewDelegate, ARSessionDelegate
         imageView.image = screenshot  // Set your image here
         view.addSubview(imageView)
         
+        view.addSubview(imageBackground)
+        imageBackground.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            imageBackground.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            imageBackground.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
+            imageBackground.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            imageBackground.trailingAnchor.constraint(equalTo: view.trailingAnchor)
+        ])
+
         // Start AR session
         startARSession()
         boxesView = DrawingBoundingBoxView(frame: frame)
@@ -72,10 +87,6 @@ class ShowNailController: UIViewController, ARSCNViewDelegate, ARSessionDelegate
         let configuration = ARWorldTrackingConfiguration()
         configuration.planeDetection = .horizontal
         sceneView.session.run(configuration, options: [.resetTracking, .removeExistingAnchors])
-        
-        if let camera = sceneView.pointOfView?.camera {
-                    camera.fieldOfView = 60 // Adjust this value as necessary
-                    camera.usesOrthographicProjection = false // Ensure orthographic projection is off
-                }
+    
     }
 }

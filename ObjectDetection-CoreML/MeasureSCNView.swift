@@ -19,6 +19,11 @@ open class MeasureSCNView: ARSCNView {
         setUp()
     }
     
+//    override public init(frame: CGRect) {
+//        super.init(frame: frame)
+//        setUp()
+//    }
+    
     //MARK: - Private helper methods
     
     private func setUp() {
