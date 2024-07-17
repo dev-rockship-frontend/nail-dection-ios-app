@@ -14,9 +14,9 @@ class CoordinateSystemView: UIView {
     var gridSpacingX: CGFloat = 0.0
     var gridSpacingY: CGFloat = 0.0
     
-    let axisLineWidth: CGFloat = 2.0
+    let axisLineWidth: CGFloat = 5.0
     let gridLineWidth: CGFloat = 0.5
-    let axisColor: UIColor = .blue
+    let axisColor: UIColor = .yellow
     let gridColor: UIColor = .lightGray
     
     override func draw(_ rect: CGRect) {
@@ -28,7 +28,7 @@ class CoordinateSystemView: UIView {
         gridSpacingX =  rect.width / 20
         gridSpacingY =  rect.height / 20
         // Draw the grid
-//        drawGrid(in: context, rect: rect)
+        //        drawGrid(in: context, rect: rect)
         
         // Draw the x and y axes
         drawAxes(in: context, rect: rect)
@@ -58,12 +58,12 @@ class CoordinateSystemView: UIView {
         context.setStrokeColor(axisColor.cgColor)
         
         // Draw x-axis
-        context.move(to: CGPoint(x: rect.origin.x, y: rect.midY))
-        context.addLine(to: CGPoint(x: rect.size.width, y: rect.midY))
+        context.move(to: CGPoint(x: rect.origin.x, y: rect.maxY))
+        context.addLine(to: CGPoint(x: rect.size.width, y: rect.maxY))
         
         // Draw y-axis
-        context.move(to: CGPoint(x: rect.midX, y: rect.origin.y))
-        context.addLine(to: CGPoint(x: rect.midX, y: rect.size.height))
+        context.move(to: CGPoint(x: rect.origin.x, y: rect.origin.y))
+        context.addLine(to: CGPoint(x: rect.origin.x, y: rect.size.height))
         
         context.strokePath()
         
@@ -72,13 +72,13 @@ class CoordinateSystemView: UIView {
     }
     
     private func labelAxes(rect: CGRect) {
-        let xAxisLabel = UILabel(frame: CGRect(x: rect.size.width - 15, y: rect.midY - 20, width: 20, height: 20))
+        let xAxisLabel = UILabel(frame: CGRect(x: rect.size.width - 15, y: rect.maxY - 20, width: 20, height: 20))
         xAxisLabel.text = "X"
         xAxisLabel.textColor = axisColor
         xAxisLabel.font = UIFont.boldSystemFont(ofSize: 14)
         self.addSubview(xAxisLabel)
         
-        let yAxisLabel = UILabel(frame: CGRect(x: rect.midX + 10, y: 10, width: 20, height: 20))
+        let yAxisLabel = UILabel(frame: CGRect(x: rect.origin.x + 10, y: 10, width: 20, height: 20))
         yAxisLabel.text = "Y"
         yAxisLabel.textColor = axisColor
         yAxisLabel.font = UIFont.boldSystemFont(ofSize: 14)

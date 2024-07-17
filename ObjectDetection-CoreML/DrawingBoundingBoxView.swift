@@ -8,8 +8,18 @@
 
 import UIKit
 import Vision
+import ARKit
 
 class DrawingBoundingBoxView: UIView {
+    
+    var isDistance3D: Bool = false
+    
+    enum Axis {
+        case x
+        case y
+    }
+    
+    var sceneView: ARSCNView?
     
     static private var colors: [String: UIColor] = [:]
     
@@ -70,19 +80,112 @@ class DrawingBoundingBoxView: UIView {
         context.setStrokeColor(UIColor.red.cgColor)
         context.setLineWidth(2.0)
         
-        drawMinimumSpanningTree(context: context, points: points)
+        drawLinesThroughPoints(context: context, points: points)
     }
     
-    func drawMinimumSpanningTree(context: CGContext, points: [CGPoint]) {
+    func displayDistanceLabel(at point: CGPoint, distance: String) {
+        let distanceLabel = UILabel()
+        distanceLabel.text = distance //String(format: "%.2f", distance)
+        distanceLabel.font = UIFont.systemFont(ofSize: 12)
+        distanceLabel.textColor = .white
+        distanceLabel.sizeToFit()
+        distanceLabel.backgroundColor = UIColor.black.withAlphaComponent(0.5)
+        distanceLabel.layer.cornerRadius = 5
+        distanceLabel.clipsToBounds = true
+        distanceLabel.center = point
+        addSubview(distanceLabel)
+    }
+    
+    
+  
+    private func calculateDistance(from point1: SCNVector3, to point2: SCNVector3) -> Float {
+        let vector = SCNVector3(point2.x - point1.x, point2.y - point1.y, point2.z - point1.z)
+        return sqrt(vector.x * vector.x + vector.y * vector.y + vector.z * vector.z)
+    }
+    
+    private func convertBoundingBoxTo3D(_ point: CGPoint) -> SCNVector3? {
+        guard let sceneView = self.sceneView else {
+            return nil
+        }
+        
+        let hitTestResults = sceneView.hitTest(point, types: .featurePoint)
+        if let result = hitTestResults.first {
+            let position = result.worldTransform.columns.3
+            return SCNVector3(position.x, position.y, position.z)
+        }
+        
+        return nil
+    }
+
+
+    
+    func drawLinesThroughPoints(context: CGContext, points: [CGPoint]) {
+
+//        214   463
         let edges = createEdges(points: points)
         let mstEdges = kruskal(points: points, edges: edges)
-        
+
         context.beginPath()
+        
         for edge in mstEdges {
-            context.move(to: edge.0)
-            context.addLine(to: edge.1)
+
+            let x1 = edge.0.x, y1 = edge.0.y
+            let x2 = edge.1.x, y2 = edge.1.y
+
+            let a = isAngleOfDeviationGreaterThanFiveDegrees(x1: x1, y1: y1, x2: x2, y2: y2, withRespectTo: .x).rounded()
+            let b = isAngleOfDeviationGreaterThanFiveDegrees(x1: x1, y1: y1, x2: x2, y2: y2, withRespectTo: .y).rounded()
+
+            if a <= 10 || b <= 10 {
+                context.move(to: edge.0)
+                context.addLine(to: edge.1)
+                
+                if isDistance3D {
+                    let point1_3D = convertBoundingBoxTo3D(edge.0)
+                    let point2_3D  = convertBoundingBoxTo3D(edge.1)
+                    if let point1_3D = point1_3D, let point2_3D = point2_3D {
+                        let distance = calculateDistance(from: point1_3D, to: point2_3D)
+                        
+                        let midpoint = CGPoint(x: (edge.0.x + edge.1.x) / 2, y: (edge.0.y + edge.1.y) / 2)
+                        displayDistanceLabel(at: midpoint, distance: "\(Int(distance * 100))")
+                    } else {
+                        print("Failed to get 3D coordinates for nails.")
+                    }
+                }
+            }
         }
         context.strokePath()
+        
+    }
+    
+    
+
+    func isAngleOfDeviationGreaterThanFiveDegrees(x1: CGFloat, y1: CGFloat, x2: CGFloat, y2: CGFloat, withRespectTo axis: Axis) -> CGFloat {
+        var difference1: CGFloat
+        var difference2: CGFloat
+        
+        switch axis {
+        case .x:
+            difference1 = abs(x2 - x1)
+            difference2 = abs(y2 - y1)
+        case .y:
+            difference1 = abs(y2 - y1)
+            difference2 = abs(x2 - x1)
+        }
+        
+        // Calculate the length of the vector projection
+        let length = sqrt(difference1 * difference1 + difference2 * difference2)
+        
+        //         Calculate the cosine of the angle
+        let cosTheta = difference1 / length
+        
+        // Calculate the angle in radians
+        let theta = acos(cosTheta)
+        
+        // Convert the angle to degrees
+        let thetaInDegrees = theta * 180.0 / .pi
+        
+        // Check if the angle is greater than 5 degrees
+        return thetaInDegrees
     }
     
     func createEdges(points: [CGPoint]) -> [(CGPoint, CGPoint, CGFloat)] {
@@ -94,6 +197,12 @@ class DrawingBoundingBoxView: UIView {
             }
         }
         return edges
+    }
+    
+    func calculateDistanceBetweenPoints(point1: CGPoint, point2: CGPoint) -> CGFloat {
+        let deltaX = point2.x - point1.x
+        let deltaY = point2.y - point1.y
+        return sqrt(deltaX * deltaX + deltaY * deltaY)
     }
     
     func kruskal(points: [CGPoint], edges: [(CGPoint, CGPoint, CGFloat)]) -> [(CGPoint, CGPoint)] {
@@ -147,12 +256,23 @@ extension VNRecognizedObjectObservation {
 }
 
 extension CGRect {
-    func toString(digit: Int) -> String {
+    func toString(digit: Int, width: CGFloat, height: CGFloat) -> String {
         let widthScreen = self.origin.x
-        let xStr = String(format: "%.\(digit)f", origin.x - 0.5)
-        let yStr = String(format: "%.\(digit)f", origin.y - 0.5)
+        let xStr = String(format: "%.\(digit)f", origin.x * width)
+        let yStr = String(format: "%.\(digit)f", origin.y * height)
         let wStr = String(format: "%.\(digit)f", width)
         let hStr = String(format: "%.\(digit)f", height)
+        
+        
+        let x1 = 1.0, y1 = 2.0, z1 = 3.0
+        let x2 = 4.0, y2 = 5.0, z2 = 6.0
+        
+        //        if isAngleOfDeviationGreaterThanFiveDegrees(x1: x1, y1: y1, z1: z1, x2: x2, y2: y2, z2: z2, withRespectTo: .x) {
+        //            print("The angle of deviation with respect to the x-axis is greater than 5 degrees")
+        //        } else {
+        //            print("The angle of deviation with respect to the x-axis is less than or equal to 5 degrees")
+        //        }
+        
         return "(\(xStr), \(yStr))"
     }
 }

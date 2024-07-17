@@ -313,6 +313,8 @@ class DetectNailViewController: UIViewController, UITableViewDelegate, UITableVi
     var lengthNodes = NSMutableArray()
     var breadthNodes = NSMutableArray()
     var lineNodes = NSMutableArray()
+    var captureButton: UIButton!
+//    var nails: [VNRecognizedObjectObservation] = []
     
     var nodeColor: UIColor {
         get {
@@ -359,6 +361,8 @@ class DetectNailViewController: UIViewController, UITableViewDelegate, UITableVi
         
         👨‍🔧.delegate = self
         setupCoordinateSystemView()
+        
+        setupResetButton()
     }
     
     func setupLabelsTableView() {
@@ -374,6 +378,27 @@ class DetectNailViewController: UIViewController, UITableViewDelegate, UITableVi
             make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom)
         }
     }
+    
+    func setupResetButton() {
+        captureButton = UIButton(type: .system)
+        captureButton.translatesAutoresizingMaskIntoConstraints = false
+        captureButton.setTitle("Reset", for: .normal)
+        captureButton.addTarget(self, action: #selector(captureAnchors), for: .touchUpInside)
+        view.addSubview(captureButton)
+        
+        captureButton.snp.makeConstraints { make in
+            make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom).offset(-50)
+            make.centerX.equalToSuperview()
+            make.width.equalTo(48)
+            make.height.equalTo(40)
+        }
+    }
+    
+    
+    @objc func captureAnchors() {
+        let vc = ShowNailController(nails: predictions)
+        
+        present(vc, animated: true)    }
     
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
@@ -514,6 +539,8 @@ extension DetectNailViewController {
         self.👨‍🔧.🏷(with: "endInference")
         if let predictions = request.results as? [VNRecognizedObjectObservation] {
             self.predictions = predictions
+//            self.nails = []
+//            self.nails = predictions
             DispatchQueue.main.async {
                 self.boxesView.predictedObjects = predictions
                 self.labelsTableView.reloadData()
@@ -539,7 +566,7 @@ extension DetectNailViewController {
         }
         
         addPoint()
-        let rectString = predictions[indexPath.row].boundingBox.toString(digit: 2)
+        let rectString = predictions[indexPath.row].boundingBox.toString(digit: 2, width: videoPreview.frame.width, height: videoPreview.frame.height)
         let confidence = predictions[indexPath.row].labels.first?.confidence ?? -1
         let confidenceString = String(format: "%.3f", confidence)
         
