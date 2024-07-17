@@ -36,6 +36,7 @@ class ShowNailController: UIViewController, ARSCNViewDelegate, ARSessionDelegate
         
         sceneView.delegate = self
         sceneView.session.delegate = self
+        sceneView.automaticallyUpdatesLighting = true
         
         sceneView.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
@@ -51,7 +52,7 @@ class ShowNailController: UIViewController, ARSCNViewDelegate, ARSessionDelegate
         boxesView.backgroundColor = .clear
         view.addSubview(boxesView)
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
             self.boxesView.isDistance3D = true
             self.boxesView.predictedObjects = self.nails
             self.boxesView.sceneView = self.sceneView
@@ -70,7 +71,13 @@ class ShowNailController: UIViewController, ARSCNViewDelegate, ARSessionDelegate
     
     func startARSession() {
         let configuration = ARWorldTrackingConfiguration()
+        configuration.planeDetection = .horizontal
         sceneView.session.run(configuration, options: [.resetTracking, .removeExistingAnchors])
+        
+        if let camera = sceneView.pointOfView?.camera {
+                    camera.fieldOfView = 60 // Adjust this value as necessary
+                    camera.usesOrthographicProjection = false // Ensure orthographic projection is off
+                }
     }
     
     

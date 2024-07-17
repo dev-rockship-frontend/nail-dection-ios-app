@@ -382,7 +382,7 @@ class DetectNailViewController: UIViewController, UITableViewDelegate, UITableVi
     func setupResetButton() {
         captureButton = UIButton(type: .system)
         captureButton.translatesAutoresizingMaskIntoConstraints = false
-        captureButton.setTitle("Reset", for: .normal)
+        captureButton.setTitle("Capture", for: .normal)
         captureButton.addTarget(self, action: #selector(captureAnchors), for: .touchUpInside)
         view.addSubview(captureButton)
         
