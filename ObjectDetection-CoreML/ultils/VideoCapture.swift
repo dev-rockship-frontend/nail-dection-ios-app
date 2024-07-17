@@ -8,7 +8,6 @@
 
 import UIKit
 import AVFoundation
-import CoreVideo
 
 public protocol VideoCaptureDelegate: class {
     func videoCapture(_ capture: VideoCapture, didCaptureVideoFrame: CVPixelBuffer?, timestamp: CMTime)
@@ -18,11 +17,10 @@ public class VideoCapture: NSObject {
     public var previewLayer: AVCaptureVideoPreviewLayer?
     public weak var delegate: VideoCaptureDelegate?
     public var fps = 15
-    
+    var cameraOutput = AVCapturePhotoOutput()
     let captureSession = AVCaptureSession()
     let videoOutput = AVCaptureVideoDataOutput()
     let queue = DispatchQueue(label: "com.tucan9389.camera-queue")
-    var cameraOutput = AVCapturePhotoOutput()
     
     var lastTimestamp = CMTime()
     
@@ -116,4 +114,3 @@ extension VideoCapture: AVCaptureVideoDataOutputSampleBufferDelegate {
         //print("dropped frame")
     }
 }
-

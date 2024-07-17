@@ -6,7 +6,6 @@
 //  Copyright © 2024 tucan9389. All rights reserved.
 //
 
-
 import UIKit
 import Vision
 import CoreMedia
@@ -306,8 +305,8 @@ extension DetectNailViewController {
         self.👨‍🔧.🏷(with: "endInference")
         if let predictions = request.results as? [VNRecognizedObjectObservation] {
             self.predictions = predictions
-//            self.nails = []
-//            self.nails = predictions
+            //            self.nails = []
+            //            self.nails = predictions
             DispatchQueue.main.async {
                 self.boxesView.predictedObjects = predictions
                 self.labelsTableView.reloadData()
@@ -332,7 +331,7 @@ extension DetectNailViewController {
             return UITableViewCell()
         }
         
-        addPoint()
+        //        addPoint()
         let rectString = predictions[indexPath.row].boundingBox.toString(digit: 2, width: videoPreview.frame.width, height: videoPreview.frame.height)
         let confidence = predictions[indexPath.row].labels.first?.confidence ?? -1
         let confidenceString = String(format: "%.3f", confidence)
@@ -403,6 +402,11 @@ extension DetectNailViewController: AVCapturePhotoCaptureDelegate {
             print("Image: \(image)")
             
             testImageView.image = image
+
+            print("Image: \(image)")
+
+            let vc = ShowNailController(nails: self.predictions, screenshot: image, frame: videoPreview.frame)
+            self.present(vc, animated: true)
         } else {
             print("AVCapturePhotoCaptureDelegate Error")
         }

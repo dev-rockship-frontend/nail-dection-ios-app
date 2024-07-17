@@ -154,9 +154,7 @@ class DrawingBoundingBoxView: UIView {
             }
         }
         context.strokePath()
-        
     }
-    
     
 
     func isAngleOfDeviationGreaterThanFiveDegrees(x1: CGFloat, y1: CGFloat, x2: CGFloat, y2: CGFloat, withRespectTo axis: Axis) -> CGFloat {
@@ -257,22 +255,8 @@ extension VNRecognizedObjectObservation {
 
 extension CGRect {
     func toString(digit: Int, width: CGFloat, height: CGFloat) -> String {
-        let widthScreen = self.origin.x
         let xStr = String(format: "%.\(digit)f", origin.x * width)
         let yStr = String(format: "%.\(digit)f", origin.y * height)
-        let wStr = String(format: "%.\(digit)f", width)
-        let hStr = String(format: "%.\(digit)f", height)
-        
-        
-        let x1 = 1.0, y1 = 2.0, z1 = 3.0
-        let x2 = 4.0, y2 = 5.0, z2 = 6.0
-        
-        //        if isAngleOfDeviationGreaterThanFiveDegrees(x1: x1, y1: y1, z1: z1, x2: x2, y2: y2, z2: z2, withRespectTo: .x) {
-        //            print("The angle of deviation with respect to the x-axis is greater than 5 degrees")
-        //        } else {
-        //            print("The angle of deviation with respect to the x-axis is less than or equal to 5 degrees")
-        //        }
-        
         return "(\(xStr), \(yStr))"
     }
 }
