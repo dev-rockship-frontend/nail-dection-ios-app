@@ -14,7 +14,7 @@ import ARKit
 import Photos
 
 
-class DetectNailViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
+class DetectNailViewController: UIViewController { // , UITableViewDelegate, UITableViewDataSource
     
     enum MeasureState {
         case lengthCalc
@@ -30,7 +30,7 @@ class DetectNailViewController: UIViewController, UITableViewDelegate, UITableVi
     @IBOutlet weak var startButton: UIButton!
     @IBOutlet weak var sceneView: MeasureSCNView!
     
-//    var labelsTableView: UITableView!
+    //    var labelsTableView: UITableView!
     var currentState: MeasureState = MeasureState.lengthCalc
     var lengthNodes = NSMutableArray()
     var breadthNodes = NSMutableArray()
@@ -39,12 +39,14 @@ class DetectNailViewController: UIViewController, UITableViewDelegate, UITableVi
     
     var numberTextField: UITextField!
     var rangeDegreeButton: UIButton!
+    
+    var fromDistanceTextField: UITextField!
+    var toDistanceTextField: UITextField!
+    var filterDistanceButton: UIButton!
+
     var rangeDegree: Double = 5.0
-    var nodeColor: UIColor {
-        get {
-            return nodeColor(forState: currentState, alphaComponent: 0.7)
-        }
-    }
+    var startDistance: Double = 0.0
+    var endDistance: Double = 0.0
     
     private lazy var sliderConf: UISlider = {
         let slider = UISlider()
@@ -73,7 +75,7 @@ class DetectNailViewController: UIViewController, UITableViewDelegate, UITableVi
     
     
     let nodeRadius = CGFloat(0.015)
-
+    
     // MARK: - Core ML model
     lazy var objectDectectionModel = { return try? best() }()
     
@@ -105,7 +107,6 @@ class DetectNailViewController: UIViewController, UITableViewDelegate, UITableVi
             return
         }
         view.backgroundColor = .white
-//        setupLabelsTableView()
         setUpModel()
         setUpCamera()
         
@@ -138,23 +139,9 @@ class DetectNailViewController: UIViewController, UITableViewDelegate, UITableVi
         }
         
         setupNumberTextField()
+        setupDistanceFilterUI()
         setupTapGesture()
     }
-    
-/*    func setupLabelsTableView() {
-        labelsTableView = UITableView()
-        labelsTableView.delegate = self
-        labelsTableView.dataSource = self
-        labelsTableView.register(UITableViewCell.self, forCellReuseIdentifier: "InfoCell")
-        self.view.addSubview(labelsTableView)
-        labelsTableView.snp.makeConstraints { make in
-            make.leading.equalToSuperview()
-            make.trailing.equalToSuperview()
-            make.top.equalTo(videoPreview.snp.bottom)
-            make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom)
-        }
-    }
- */
     
     func setupResetButton() {
         captureButton = UIButton(type: .system)
@@ -183,7 +170,6 @@ class DetectNailViewController: UIViewController, UITableViewDelegate, UITableVi
         numberTextField.layer.cornerRadius = 4
         numberTextField.borderStyle = .roundedRect
         numberTextField.keyboardType = .numberPad
-//        numberTextField.placeholder = "Enter number"
         numberTextField.backgroundColor = .white
         numberTextField.textColor = .black
         numberTextField.text = "5"
@@ -213,6 +199,71 @@ class DetectNailViewController: UIViewController, UITableViewDelegate, UITableVi
         }
     }
     
+    func setupDistanceFilterUI() {
+        let distanceFilterLabel = UILabel()
+        distanceFilterLabel.text = "Distance Filter (mm)"
+        distanceFilterLabel.textColor = .black
+        distanceFilterLabel.font = UIFont.systemFont(ofSize: 12)
+        view.addSubview(distanceFilterLabel)
+        
+        distanceFilterLabel.snp.makeConstraints { make in
+            make.top.equalTo(rangeDegreeButton.snp.bottom).offset(20)
+            make.leading.equalToSuperview().offset(12)
+        }
+        
+        fromDistanceTextField = UITextField()
+        fromDistanceTextField.layer.borderWidth = 1
+        fromDistanceTextField.layer.borderColor = UIColor.black.cgColor
+        fromDistanceTextField.layer.cornerRadius = 4
+        fromDistanceTextField.borderStyle = .roundedRect
+        fromDistanceTextField.keyboardType = .numberPad
+        fromDistanceTextField.backgroundColor = .white
+        fromDistanceTextField.textColor = .black
+        fromDistanceTextField.placeholder = "From"
+        view.addSubview(fromDistanceTextField)
+        
+        fromDistanceTextField.snp.makeConstraints { make in
+            make.top.equalTo(distanceFilterLabel.snp.bottom).offset(10)
+            make.leading.equalToSuperview().offset(12)
+            make.width.equalTo(60)
+            make.height.equalTo(30)
+        }
+        
+        toDistanceTextField = UITextField()
+        toDistanceTextField.layer.borderWidth = 1
+        toDistanceTextField.layer.borderColor = UIColor.black.cgColor
+        toDistanceTextField.layer.cornerRadius = 4
+        toDistanceTextField.borderStyle = .roundedRect
+        toDistanceTextField.keyboardType = .numberPad
+        toDistanceTextField.backgroundColor = .white
+        toDistanceTextField.textColor = .black
+        toDistanceTextField.placeholder = "To"
+        view.addSubview(toDistanceTextField)
+        
+        toDistanceTextField.snp.makeConstraints { make in
+            make.top.equalTo(distanceFilterLabel.snp.bottom).offset(10)
+            make.leading.equalTo(fromDistanceTextField.snp.trailing).offset(10)
+            make.width.equalTo(60)
+            make.height.equalTo(30)
+        }
+        
+        filterDistanceButton = UIButton(type: .system)
+        filterDistanceButton.setTitle("Filter", for: .normal)
+        filterDistanceButton.layer.borderWidth = 1
+        filterDistanceButton.layer.cornerRadius = 5
+        filterDistanceButton.layer.borderColor = UIColor.blue.cgColor
+        filterDistanceButton.addTarget(self, action: #selector(filterDistanceButtonTapped), for: .touchUpInside)
+        view.addSubview(filterDistanceButton)
+        
+        filterDistanceButton.snp.makeConstraints { make in
+            make.top.equalTo(toDistanceTextField.snp.bottom).offset(10)
+            make.leading.equalTo(fromDistanceTextField.snp.leading)
+            make.width.equalTo(60)
+            make.height.equalTo(30)
+        }
+    }
+
+    
     func setupTapGesture() {
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
         view.addGestureRecognizer(tapGesture)
@@ -226,17 +277,31 @@ class DetectNailViewController: UIViewController, UITableViewDelegate, UITableVi
     @objc func captureAnchors() {
         let settings = AVCapturePhotoSettings()
         self.videoCapture?.cameraOutput.capturePhoto(with: settings, delegate: self as AVCapturePhotoCaptureDelegate)
-//        let vc = ShowNailController(nails: predictions)
-//        
-//        present(vc, animated: true)   
     }
     
+    
+    @objc func filterDistanceButtonTapped() {
+        let fromDistanceText = fromDistanceTextField.text ?? ""
+        let toDistanceText = toDistanceTextField.text ?? ""
+        
+        guard let fromDistance = Double(fromDistanceText), let toDistance = Double(toDistanceText) else {
+            print("Invalid distance range")
+            return
+        }
+        
+        print("Filtering predictions from \(fromDistance) mm to \(toDistance) mm")
+        
+        startDistance = fromDistance
+        endDistance = toDistance
+        
+        // Add your filtering logic here
+    }
+
     
     @objc func rangeDegreeButtonAnchors() {
         let numberText = numberTextField.text ?? ""
         print("Number entered: \(numberText)")
         rangeDegree = Double(String(numberText)) ?? 5
-//        present(vc, animated: true)
     }
     
     @objc func sliderChanged(_ sender: Any) {
@@ -297,25 +362,6 @@ class DetectNailViewController: UIViewController, UITableViewDelegate, UITableVi
         }
     }
     
-    
-    private func nodesList(forState state: MeasureState) -> NSMutableArray {
-        switch state {
-        case .lengthCalc:
-            return lengthNodes
-        case .breadthCalc:
-            return breadthNodes
-        }
-    }
-    
-    private func nodeColor(forState state: MeasureState, alphaComponent: CGFloat) -> UIColor {
-        switch state {
-        case .lengthCalc:
-            return UIColor.red.withAlphaComponent(alphaComponent)
-        case .breadthCalc:
-            return UIColor.green.withAlphaComponent(alphaComponent)
-        }
-    }
-    
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         resizePreviewLayer()
@@ -325,14 +371,6 @@ class DetectNailViewController: UIViewController, UITableViewDelegate, UITableVi
         videoCapture?.previewLayer?.frame = videoPreview.bounds
     }
     
-    @IBAction func buttonTapped(_ sender: UIButton) {
-        print("Button was tapped")
-        startObjectDetection()
-    }
-    
-    func startObjectDetection() {
-        print("Object detection started")
-    }
 }
 
 extension DetectNailViewController: VideoCaptureDelegate {
@@ -357,12 +395,11 @@ extension DetectNailViewController {
         self.👨‍🔧.🏷(with: "endInference")
         if let predictions = request.results as? [VNRecognizedObjectObservation] {
             self.predictions = predictions
-            //            self.nails = []
-            //            self.nails = predictions
             DispatchQueue.main.async {
                 self.boxesView.predictedObjects = predictions
                 self.boxesView.rangeDegree = self.rangeDegree
-//                self.labelsTableView.reloadData()
+                self.boxesView.startDistance = self.startDistance
+                self.boxesView.endDistance = self.endDistance
                 self.👨‍🔧.🎬🤚()
                 self.isInferencing = false
             }
@@ -371,26 +408,6 @@ extension DetectNailViewController {
             self.isInferencing = false
         }
         self.semaphore.signal()
-    }
-}
-
-extension DetectNailViewController {
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return predictions.count
-    }
-    
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let cell = tableView.dequeueReusableCell(withIdentifier: "InfoCell") else {
-            return UITableViewCell()
-        }
-        
-        //        addPoint()
-        let rectString = predictions[indexPath.row].boundingBox.toString(digit: 2, width: videoPreview.frame.width, height: videoPreview.frame.height)
-        let confidence = predictions[indexPath.row].labels.first?.confidence ?? -1
-        let confidenceString = String(format: "%.3f", confidence)
-        
-//        cell.textLabel?.text = "Point \(indexPath.row + 1): \(rectString)"
-        return cell
     }
 }
 
@@ -426,21 +443,6 @@ class MovingAverageFilter {
     }
 }
 
-extension DetectNailViewController {
-    func calculateDistanceBetweenPoints(point1: CGPoint, point2: CGPoint) -> CGFloat {
-        let dx = point2.x - point1.x
-        let dy = point2.y - point1.y
-        return sqrt(dx*dx + dy*dy)
-    }
-}
-
-class SecondViewController: UIViewController {
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        view.backgroundColor = .white
-        title = "Second View"
-    }
-}
 
 extension DetectNailViewController: AVCapturePhotoCaptureDelegate {
     func photoOutput(_ output: AVCapturePhotoOutput, didFinishProcessingPhoto photo: AVCapturePhoto, error: Error?) {
