@@ -40,9 +40,19 @@ class DetectNailViewController: UIViewController { // , UITableViewDelegate, UIT
     var numberTextField: UITextField!
     var rangeDegreeButton: UIButton!
     
-    var fromDistanceTextField: UITextField!
-    var toDistanceTextField: UITextField!
-    var filterDistanceButton: UIButton!
+    private lazy var fromDistanceTextField: UITextField = {
+        let tf = UITextField()
+        tf.placeholder = "from"
+        return tf
+    }()
+
+    private lazy var toDistanceTextField: UITextField = {
+        let tf = UITextField()
+        tf.placeholder = "to"
+        return tf
+    }()
+    
+//    var filterDistanceButton: UIButton!
 
     var rangeDegree: Double = 5.0
     var startDistance: Double = 0.0
@@ -211,15 +221,14 @@ class DetectNailViewController: UIViewController { // , UITableViewDelegate, UIT
             make.leading.equalToSuperview().offset(12)
         }
         
-        fromDistanceTextField = UITextField()
+//        fromDistanceTextField = UITextField()
         fromDistanceTextField.layer.borderWidth = 1
         fromDistanceTextField.layer.borderColor = UIColor.black.cgColor
         fromDistanceTextField.layer.cornerRadius = 4
-        fromDistanceTextField.borderStyle = .roundedRect
+//        fromDistanceTextField.borderStyle = .roundedRect
         fromDistanceTextField.keyboardType = .numberPad
-        fromDistanceTextField.backgroundColor = .white
+//        fromDistanceTextField.backgroundColor = .white
         fromDistanceTextField.textColor = .black
-        fromDistanceTextField.placeholder = "From"
         view.addSubview(fromDistanceTextField)
         
         fromDistanceTextField.snp.makeConstraints { make in
@@ -229,15 +238,14 @@ class DetectNailViewController: UIViewController { // , UITableViewDelegate, UIT
             make.height.equalTo(30)
         }
         
-        toDistanceTextField = UITextField()
+//        toDistanceTextField = UITextField()
         toDistanceTextField.layer.borderWidth = 1
         toDistanceTextField.layer.borderColor = UIColor.black.cgColor
         toDistanceTextField.layer.cornerRadius = 4
-        toDistanceTextField.borderStyle = .roundedRect
+//        toDistanceTextField.borderStyle = .roundedRect
         toDistanceTextField.keyboardType = .numberPad
-        toDistanceTextField.backgroundColor = .white
+//        toDistanceTextField.backgroundColor = .white
         toDistanceTextField.textColor = .black
-        toDistanceTextField.placeholder = "To"
         view.addSubview(toDistanceTextField)
         
         toDistanceTextField.snp.makeConstraints { make in
@@ -247,20 +255,20 @@ class DetectNailViewController: UIViewController { // , UITableViewDelegate, UIT
             make.height.equalTo(30)
         }
         
-        filterDistanceButton = UIButton(type: .system)
-        filterDistanceButton.setTitle("Filter", for: .normal)
-        filterDistanceButton.layer.borderWidth = 1
-        filterDistanceButton.layer.cornerRadius = 5
-        filterDistanceButton.layer.borderColor = UIColor.blue.cgColor
-        filterDistanceButton.addTarget(self, action: #selector(filterDistanceButtonTapped), for: .touchUpInside)
-        view.addSubview(filterDistanceButton)
+//        filterDistanceButton = UIButton(type: .system)
+//        filterDistanceButton.setTitle("Filter", for: .normal)
+//        filterDistanceButton.layer.borderWidth = 1
+//        filterDistanceButton.layer.cornerRadius = 5
+//        filterDistanceButton.layer.borderColor = UIColor.blue.cgColor
+//        filterDistanceButton.addTarget(self, action: #selector(filterDistanceButtonTapped), for: .touchUpInside)
+//        view.addSubview(filterDistanceButton)
         
-        filterDistanceButton.snp.makeConstraints { make in
-            make.top.equalTo(toDistanceTextField.snp.bottom).offset(10)
-            make.leading.equalTo(fromDistanceTextField.snp.leading)
-            make.width.equalTo(60)
-            make.height.equalTo(30)
-        }
+//        filterDistanceButton.snp.makeConstraints { make in
+//            make.top.equalTo(toDistanceTextField.snp.bottom).offset(10)
+//            make.leading.equalTo(fromDistanceTextField.snp.leading)
+//            make.width.equalTo(60)
+//            make.height.equalTo(30)
+//        }
     }
 
     
@@ -280,22 +288,22 @@ class DetectNailViewController: UIViewController { // , UITableViewDelegate, UIT
     }
     
     
-    @objc func filterDistanceButtonTapped() {
-        let fromDistanceText = fromDistanceTextField.text ?? ""
-        let toDistanceText = toDistanceTextField.text ?? ""
-        
-        guard let fromDistance = Double(fromDistanceText), let toDistance = Double(toDistanceText) else {
-            print("Invalid distance range")
-            return
-        }
-        
-        print("Filtering predictions from \(fromDistance) mm to \(toDistance) mm")
-        
-        startDistance = fromDistance
-        endDistance = toDistance
-        
-        // Add your filtering logic here
-    }
+//    @objc func filterDistanceButtonTapped() {
+//        let fromDistanceText = fromDistanceTextField.text ?? ""
+//        let toDistanceText = toDistanceTextField.text ?? ""
+//        
+//        guard let fromDistance = Double(fromDistanceText), let toDistance = Double(toDistanceText) else {
+//            print("Invalid distance range")
+//            return
+//        }
+//        
+//        print("Filtering predictions from \(fromDistance) mm to \(toDistance) mm")
+//        
+//        startDistance = fromDistance
+//        endDistance = toDistance
+//        
+//        // Add your filtering logic here
+//    }
 
     
     @objc func rangeDegreeButtonAnchors() {
@@ -397,9 +405,9 @@ extension DetectNailViewController {
             self.predictions = predictions
             DispatchQueue.main.async {
                 self.boxesView.predictedObjects = predictions
-                self.boxesView.rangeDegree = self.rangeDegree
-                self.boxesView.startDistance = self.startDistance
-                self.boxesView.endDistance = self.endDistance
+//                self.boxesView.rangeDegree = self.rangeDegree
+//                self.boxesView.startDistance = self.startDistance
+//                self.boxesView.endDistance = self.endDistance
                 self.👨‍🔧.🎬🤚()
                 self.isInferencing = false
             }
@@ -445,21 +453,53 @@ class MovingAverageFilter {
 
 
 extension DetectNailViewController: AVCapturePhotoCaptureDelegate {
+    
     func photoOutput(_ output: AVCapturePhotoOutput, didFinishProcessingPhoto photo: AVCapturePhoto, error: Error?) {
         if let error = error {
-            print("error occurred : \(error.localizedDescription)")
+            print("Error occurred: \(error.localizedDescription)")
+            return
         }
-        if let dataImage = photo.fileDataRepresentation() {
-            let dataProvider = CGDataProvider(data: dataImage as CFData)
-            let cgImageRef: CGImage! = CGImage(jpegDataProviderSource: dataProvider!, decode: nil, shouldInterpolate: true, intent: .defaultIntent)
-            let image = UIImage(cgImage: cgImageRef, scale: 0.5, orientation: UIImage.Orientation.right)
-            
-            print("Image: \(image)")
-            
-            let vc = ShowNailController(nails: self.predictions, screenshot: image, frame: videoPreview.frame)
-            self.present(vc, animated: true)
-        } else {
+        
+        guard let dataImage = photo.fileDataRepresentation(),
+              let dataProvider = CGDataProvider(data: dataImage as CFData),
+              let cgImageRef = CGImage(jpegDataProviderSource: dataProvider, decode: nil, shouldInterpolate: true, intent: .defaultIntent) else {
             print("AVCapturePhotoCaptureDelegate Error")
+            return
         }
+        
+        let image = UIImage(cgImage: cgImageRef, scale: 0.5, orientation: .right)
+        
+        let fromDistanceText = fromDistanceTextField.text ?? ""
+        let toDistanceText = toDistanceTextField.text ?? ""
+        
+        guard let fromDistance = Double(fromDistanceText), let toDistance = Double(toDistanceText) else {
+            showAlert(message: "Invalid distance range. Please enter valid distances.")
+            return
+        }
+        
+        guard !toDistanceText.isEmpty else {
+            showAlert(message: "To distance cannot be empty. Please enter a valid distance.")
+            return
+        }
+        
+        guard toDistance > fromDistance else {
+            showAlert(message: "To distance must be greater than from distance. Please enter a valid distance range.")
+            return
+        }
+        
+        let vc = ShowNailController(nails: predictions,
+                                    screenshot: image,
+                                    frame: videoPreview.frame,
+                                    rangeOfDegree: rangeDegree,
+                                    fromDistance: fromDistance,
+                                    toDistance: toDistance)
+        self.present(vc, animated: true)
     }
+
+    private func showAlert(message: String) {
+        let alert = UIAlertController(title: "Invalid Input", message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+        self.present(alert, animated: true, completion: nil)
+    }
+
 }

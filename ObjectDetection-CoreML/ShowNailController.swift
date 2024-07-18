@@ -13,22 +13,55 @@ import ARKit
 class ShowNailController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
     
     var nails: [VNRecognizedObjectObservation]
-    var screenshot: UIImage!
-    var boxesView: DrawingBoundingBoxView!
-    var videoPreview: UIView!
+    
+    var screenshot: UIImage
+    
+    var rangeOfDegree: Double
+    
+    var fromDistance: Double
+    
+    var toDistance: Double
+    
+    var frame: CGRect
+    
+    private lazy var boxesView: DrawingBoundingBoxView = {
+        let view = DrawingBoundingBoxView()
+        return view
+    }()
+    
+    private lazy var videoPreview: UIView = {
+        let view = UIView()
+        return view
+    }()
+    
     private lazy var imageBackground: UIImageView = {
         let imageView = UIImageView()
         return imageView
     }()
     
-    var sceneView: ARSCNView!
-    var imageView: UIImageView!
-    var frame: CGRect
+    private lazy var sceneView: ARSCNView = {
+        let view = ARSCNView()
+        return view
+    }()
     
-    init(nails: [VNRecognizedObjectObservation], screenshot: UIImage, frame: CGRect) {
+    private lazy var imageView: UIImageView = {
+        let imageView = UIImageView()
+        return imageView
+    }()
+    
+    
+    init(nails: [VNRecognizedObjectObservation],
+         screenshot: UIImage,
+         frame: CGRect,
+         rangeOfDegree: Double,
+         fromDistance: Double,
+         toDistance: Double) {
         self.nails = nails
         self.screenshot = screenshot
         self.frame = frame
+        self.rangeOfDegree = rangeOfDegree
+        self.fromDistance = fromDistance
+        self.toDistance = toDistance
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -49,18 +82,9 @@ class ShowNailController: UIViewController, ARSCNViewDelegate, ARSessionDelegate
         
         imageView = UIImageView()
         imageView.frame = self.frame
-        imageView.image = screenshot  // Set your image here
+        imageView.image = screenshot
         view.addSubview(imageView)
         
-        view.addSubview(imageBackground)
-        imageBackground.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            imageBackground.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            imageBackground.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
-            imageBackground.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            imageBackground.trailingAnchor.constraint(equalTo: view.trailingAnchor)
-        ])
-
         // Start AR session
         startARSession()
         boxesView = DrawingBoundingBoxView(frame: frame)
@@ -68,10 +92,13 @@ class ShowNailController: UIViewController, ARSCNViewDelegate, ARSessionDelegate
         view.addSubview(boxesView)
         
         // Configure 3D distance after a delay (example: 3 seconds)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
+            
             self.boxesView.isDistance3D = true
             self.boxesView.predictedObjects = self.nails
             self.boxesView.sceneView = self.sceneView
+            self.boxesView.startDistance = self.fromDistance
+            self.boxesView.endDistance = self.toDistance
         }
         
         // Create UIImageView
@@ -87,7 +114,7 @@ class ShowNailController: UIViewController, ARSCNViewDelegate, ARSessionDelegate
         let configuration = ARWorldTrackingConfiguration()
         configuration.planeDetection = .horizontal
         sceneView.session.run(configuration, options: [.resetTracking, .removeExistingAnchors])
-    
+        
     }
 }
 
