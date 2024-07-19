@@ -34,11 +34,6 @@ class ShowNailController: UIViewController, ARSCNViewDelegate, ARSessionDelegate
         return view
     }()
     
-    private lazy var imageBackground: UIImageView = {
-        let imageView = UIImageView()
-        return imageView
-    }()
-    
     private lazy var sceneView: ARSCNView = {
         let view = ARSCNView()
         return view
@@ -49,6 +44,45 @@ class ShowNailController: UIViewController, ARSCNViewDelegate, ARSessionDelegate
         return imageView
     }()
     
+    var numberTextField: UITextField!
+    
+    private lazy var fromDistanceTextField: UITextField = {
+        let tf = UITextField()
+        tf.placeholder = "from"
+        return tf
+    }()
+
+    private lazy var toDistanceTextField: UITextField = {
+        let tf = UITextField()
+        tf.placeholder = "to"
+        return tf
+    }()
+    
+    private lazy var sliderConf: UISlider = {
+        let slider = UISlider()
+        slider.minimumValue = 0.01
+        slider.maximumValue = 1
+        slider.value = 0.25
+        slider.isUserInteractionEnabled = false
+//        slider.addTarget(self, action: #selector(sliderChanged), for: .valueChanged)
+        return slider
+    }()
+    
+    private lazy var labelSliderConf: UILabel = {
+        let label = UILabel()
+        label.text = "0.25 Confidence Threshold"
+        label.textColor = .black
+        label.font = UIFont.systemFont(ofSize: 12)
+        return label
+    }()
+    
+    private lazy var labelRangeOfDegree: UILabel = {
+        let label = UILabel()
+        label.text = "Range of degree"
+        label.textColor = .black
+        label.font = UIFont.systemFont(ofSize: 12)
+        return label
+    }()
     
     init(nails: [VNRecognizedObjectObservation],
          screenshot: UIImage,
@@ -99,15 +133,125 @@ class ShowNailController: UIViewController, ARSCNViewDelegate, ARSessionDelegate
             self.boxesView.sceneView = self.sceneView
             self.boxesView.startDistance = self.fromDistance
             self.boxesView.endDistance = self.toDistance
+            self.boxesView.rangeDegree = self.rangeOfDegree
+            
         }
         
-        // Create UIImageView
+        
+        let dismissButton = UIButton()
+        dismissButton.setImage(UIImage(named: "dismiss_icon"), for: .normal)
+        dismissButton.addTarget(self, action: #selector(dismissButtonTapped), for: .touchUpInside)
+        view.addSubview(dismissButton)
+        dismissButton.snp.makeConstraints { make in
+            make.top.equalTo(view.safeAreaLayoutGuide.snp.top)
+            make.trailing.equalToSuperview().offset(-12)
+            make.width.height.equalTo(30)
+        }
+        
+        setupNumberTextField()
+        setupDistanceFilterUI()
+    }
+    
+    func setupNumberTextField() {
+        
+        view.addSubview(labelSliderConf)
+        labelSliderConf.snp.makeConstraints { make in
+            make.top.equalTo(boxesView.snp.bottom).offset(10)
+            make.leading.equalToSuperview().offset(12)
+        }
+        
+        view.addSubview(sliderConf)
+        sliderConf.snp.makeConstraints { make in
+            make.top.equalTo(labelSliderConf.snp.bottom).offset(10)
+            make.leading.equalToSuperview().offset(12)
+            make.height.equalTo(30)
+            make.width.equalTo(171)
+        }
+        
+        view.addSubview(labelRangeOfDegree)
+        
+        labelRangeOfDegree.snp.makeConstraints { make in
+            make.top.equalTo(labelSliderConf.snp.top)
+            make.trailing.equalToSuperview().offset(-12)
+        }
+        
+        numberTextField = UITextField()
+        numberTextField.layer.borderWidth = 1
+        numberTextField.layer.borderColor = UIColor.black.cgColor
+        numberTextField.isUserInteractionEnabled = false
+        numberTextField.layer.cornerRadius = 4
+        numberTextField.borderStyle = .roundedRect
+        numberTextField.keyboardType = .numberPad
+        numberTextField.backgroundColor = .white
+        numberTextField.textColor = .black
+        numberTextField.textAlignment = .center
+        numberTextField.text = "\(Int(rangeOfDegree))"
+        view.addSubview(numberTextField)
+        
+        numberTextField.snp.makeConstraints { make in
+            make.trailing.equalTo(labelRangeOfDegree.snp.trailing)
+            make.top.equalTo(sliderConf.snp.top)
+            make.width.equalTo(60)
+            make.height.equalTo(30)
+        }
+    }
+    
+    func setupDistanceFilterUI() {
+        let distanceFilterLabel = UILabel()
+        distanceFilterLabel.text = "Distance Filter (mm)"
+        distanceFilterLabel.textColor = .black
+        distanceFilterLabel.font = UIFont.systemFont(ofSize: 12)
+        view.addSubview(distanceFilterLabel)
+        
+        distanceFilterLabel.snp.makeConstraints { make in
+            make.top.equalTo(sliderConf.snp.bottom).offset(30)
+            make.centerX.equalToSuperview()
+        }
+        
+        fromDistanceTextField.layer.borderWidth = 1
+        fromDistanceTextField.layer.borderColor = UIColor.black.cgColor
+        fromDistanceTextField.layer.cornerRadius = 4
+        fromDistanceTextField.text = "\(Int(fromDistance))"
+        fromDistanceTextField.keyboardType = .numberPad
+        fromDistanceTextField.isUserInteractionEnabled = false
+        fromDistanceTextField.textAlignment = .center
+        fromDistanceTextField.textColor = .black
+        view.addSubview(fromDistanceTextField)
+        
+        fromDistanceTextField.snp.makeConstraints { make in
+            make.top.equalTo(distanceFilterLabel.snp.bottom).offset(10)
+            make.centerX.equalToSuperview().offset(-35)
+            make.width.equalTo(60)
+            make.height.equalTo(30)
+        }
+        
+        toDistanceTextField.layer.borderWidth = 1
+        toDistanceTextField.layer.borderColor = UIColor.black.cgColor
+        toDistanceTextField.layer.cornerRadius = 4
+        toDistanceTextField.text = "\(Int(toDistance))"
+        toDistanceTextField.textAlignment = .center
+        toDistanceTextField.keyboardType = .numberPad
+        toDistanceTextField.isUserInteractionEnabled = false
+        toDistanceTextField.textColor = .black
+        view.addSubview(toDistanceTextField)
+        
+        toDistanceTextField.snp.makeConstraints { make in
+            make.top.equalTo(distanceFilterLabel.snp.bottom).offset(10)
+            make.centerX.equalToSuperview().offset(35)
+            make.width.equalTo(60)
+            make.height.equalTo(30)
+        }
         
     }
+    
     
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         boxesView.isDistance3D = false
+    }
+    
+    @objc func dismissButtonTapped() {
+        self.dismiss(animated: true, completion: nil)
     }
     
     func startARSession() {

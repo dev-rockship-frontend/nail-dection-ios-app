@@ -13,10 +13,9 @@ import ARKit
 class DrawingBoundingBoxView: UIView {
     
     var isDistance3D: Bool = false
-    var rangeDegree: Double = 5.0
+    var rangeDegree: Double = 0.0
     var startDistance: Double = 0.0
     var endDistance: Double = 0.0
-    
     enum Axis {
         case x
         case y
@@ -47,11 +46,7 @@ class DrawingBoundingBoxView: UIView {
         guard let context = UIGraphicsGetCurrentContext() else { return }
         context.clear(rect)
         drawBoundingBoxes()
-        
-        if isDistance3D {
-            drawConnectingLines(context: context)
-        }
-        
+        drawConnectingLines(context: context)
     }
     
     func drawBoundingBoxes() {
@@ -81,7 +76,7 @@ class DrawingBoundingBoxView: UIView {
             let scale = CGAffineTransform.identity.scaledBy(x: bounds.width, y: bounds.height)
             let transform = CGAffineTransform(scaleX: 1, y: -1).translatedBy(x: 0, y: -1)
             let centerRect = prediction.boundingBox.applying(transform).applying(scale)
-            return CGPoint(x: centerRect.minX, y: centerRect.minY)
+            return CGPoint(x: centerRect.midX, y: centerRect.midY)
         }
         
         context.setStrokeColor(UIColor.red.cgColor)
@@ -115,13 +110,7 @@ class DrawingBoundingBoxView: UIView {
             return nil
         }
         
-        if isPointInsideSceneView(point) {
-            print("The point is inside the sceneView.")
-        } else {
-            print("The point is outside the sceneView.")
-        }
-        
-        let hitTestResults = sceneView.hitTest(point, types: [.featurePoint, .existingPlaneUsingExtent, .existingPlane])
+        let hitTestResults = sceneView.hitTest(point, types: .featurePoint)
         if let result = hitTestResults.first {
             let position = result.worldTransform.columns.3
             return SCNVector3(position.x, position.y, position.z)
@@ -130,94 +119,57 @@ class DrawingBoundingBoxView: UIView {
         return nil
     }
 
-    private func isPointInsideSceneView(_ point: CGPoint) -> Bool {
-        guard let sceneView = self.sceneView else {
-            print("Scene view is not available.")
-            return false
-        }
-        
-        return sceneView.bounds.contains(point)
-    }
+
     
     func drawLinesThroughPoints(context: CGContext, points: [CGPoint]) {
+
+//        214   463
         let edges = createEdges(points: points)
         let mstEdges = kruskal(points: points, edges: edges)
-        
+
         context.beginPath()
         
         for edge in mstEdges {
-            drawEdgeIfValid(context: context, edge: edge)
+
+            let x1 = edge.0.x, y1 = edge.0.y
+            let x2 = edge.1.x, y2 = edge.1.y
+
+            let a = isAngleOfDeviationGreaterThanFiveDegrees(x1: x1, y1: y1, x2: x2, y2: y2, withRespectTo: .x).rounded()
+            let b = isAngleOfDeviationGreaterThanFiveDegrees(x1: x1, y1: y1, x2: x2, y2: y2, withRespectTo: .y).rounded()
+            
+            var angle = ""
+            if a <= rangeDegree {
+                angle = "\(a)"
+            } else if b <= rangeDegree {
+                angle = "\(b)"
+            } else {
+                angle = ""
+            }
+
+            print(rangeDegree)
+            if a <= rangeDegree || b <= rangeDegree {
+                if isDistance3D {
+                    
+                    let point1_3D = convertBoundingBoxTo3D(edge.0)
+                    let point2_3D  = convertBoundingBoxTo3D(edge.1)
+                    if let point1_3D = point1_3D, let point2_3D = point2_3D {
+                        let distance = Double(calculateDistance(from: point1_3D, to: point2_3D) * 1000)
+                        
+                        if distance >= startDistance && distance <= endDistance {
+                            context.move(to: edge.0)
+                            context.addLine(to: edge.1)
+                            
+                            let midpoint = CGPoint(x: (edge.0.x + edge.1.x) / 2, y: (edge.0.y + edge.1.y) / 2)
+                            displayDistanceLabel(at: midpoint, distance: "\(Int(distance)), \(angle)")
+                        }
+                    } else {
+                        print("Failed to get 3D coordinates for nails.")
+                    }
+                }
+            }
         }
-        
         context.strokePath()
     }
-
-    private func drawEdgeIfValid(context: CGContext, edge: (CGPoint, CGPoint)) {
-        let x1 = edge.0.x, y1 = edge.0.y
-        let x2 = edge.1.x, y2 = edge.1.y
-        
-        let a = isAngleOfDeviationGreaterThanFiveDegrees(x1: x1, y1: y1, x2: x2, y2: y2, withRespectTo: .x).rounded()
-        let b = isAngleOfDeviationGreaterThanFiveDegrees(x1: x1, y1: y1, x2: x2, y2: y2, withRespectTo: .y).rounded()
-        
-        guard let point1_3D = convertBoundingBoxTo3D(edge.0),
-              let point2_3D = convertBoundingBoxTo3D(edge.1) else {
-            print("Failed to get 3D coordinates for nails.")
-            return
-        }
-        
-        let distance = Double(calculateDistance(from: point1_3D, to: point2_3D))
-        
-        if isDistance3D && (a <= rangeDegree || b <= rangeDegree) && distance >= startDistance && distance <= endDistance {
-            drawLine(context: context, from: edge.0, to: edge.1, distance: distance)
-        }
-    }
-
-    private func drawLine(context: CGContext, from point1: CGPoint, to point2: CGPoint, distance: Double) {
-        context.move(to: point1)
-        context.addLine(to: point2)
-        
-        let midpoint = CGPoint(x: (point1.x + point2.x) / 2, y: (point1.y + point2.y) / 2)
-        displayDistanceLabel(at: midpoint, distance: "\(Int(distance * 1000))")
-    }
-
-    
-//    func drawLinesThroughPoints(context: CGContext, points: [CGPoint]) {
-//        
-//        let edges = createEdges(points: points)
-//        let mstEdges = kruskal(points: points, edges: edges)
-//        
-//        context.beginPath()
-//        
-//        for edge in mstEdges {
-//            
-//            let x1 = edge.0.x, y1 = edge.0.y
-//            let x2 = edge.1.x, y2 = edge.1.y
-//            
-//            let a = isAngleOfDeviationGreaterThanFiveDegrees(x1: x1, y1: y1, x2: x2, y2: y2, withRespectTo: .x).rounded()
-//            let b = isAngleOfDeviationGreaterThanFiveDegrees(x1: x1, y1: y1, x2: x2, y2: y2, withRespectTo: .y).rounded()
-//            
-//            let point1_3D = convertBoundingBoxTo3D(edge.0)
-//            let point2_3D  = convertBoundingBoxTo3D(edge.1)
-//            
-//            if let point1_3D = point1_3D, let point2_3D = point2_3D {
-//                
-//                let distance = Double(calculateDistance(from: point1_3D, to: point2_3D))
-//                
-//                if isDistance3D && (a <= rangeDegree || b <= rangeDegree) && distance >= startDistance && distance <= endDistance {
-//                    
-//                    context.move(to: edge.0)
-//                    context.addLine(to: edge.1)
-//                    
-//                    let midpoint = CGPoint(x: (edge.0.x + edge.1.x) / 2, y: (edge.0.y + edge.1.y) / 2)
-//                    displayDistanceLabel(at: midpoint, distance: "\(Int(distance * 1000))")
-//                    
-//                } else {
-//                    print("Failed to get 3D coordinates for nails.")
-//                }
-//            }
-//        }
-//        context.strokePath()
-//    }
     
 
     func isAngleOfDeviationGreaterThanFiveDegrees(x1: CGFloat, y1: CGFloat, x2: CGFloat, y2: CGFloat, withRespectTo axis: Axis) -> CGFloat {

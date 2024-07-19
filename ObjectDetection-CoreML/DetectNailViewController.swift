@@ -38,7 +38,6 @@ class DetectNailViewController: UIViewController { // , UITableViewDelegate, UIT
     var captureButton: UIButton!
     
     var numberTextField: UITextField!
-    var rangeDegreeButton: UIButton!
     
     private lazy var fromDistanceTextField: UITextField = {
         let tf = UITextField()
@@ -51,12 +50,6 @@ class DetectNailViewController: UIViewController { // , UITableViewDelegate, UIT
         tf.placeholder = "to"
         return tf
     }()
-    
-//    var filterDistanceButton: UIButton!
-
-    var rangeDegree: Double = 5.0
-    var startDistance: Double = 0.0
-    var endDistance: Double = 0.0
     
     private lazy var sliderConf: UISlider = {
         let slider = UISlider()
@@ -182,28 +175,13 @@ class DetectNailViewController: UIViewController { // , UITableViewDelegate, UIT
         numberTextField.keyboardType = .numberPad
         numberTextField.backgroundColor = .white
         numberTextField.textColor = .black
+        numberTextField.textAlignment = .center
         numberTextField.text = "5"
         view.addSubview(numberTextField)
         
         numberTextField.snp.makeConstraints { make in
             make.trailing.equalTo(labelRangeOfDegree.snp.trailing)
             make.top.equalTo(sliderConf.snp.top)
-            make.width.equalTo(60)
-            make.height.equalTo(30)
-        }
-        
-        rangeDegreeButton = UIButton(type: .system)
-        rangeDegreeButton.translatesAutoresizingMaskIntoConstraints = false
-        rangeDegreeButton.setTitle("Done", for: .normal)
-        rangeDegreeButton.layer.borderWidth = 1
-        rangeDegreeButton.layer.cornerRadius = 5
-        rangeDegreeButton.layer.borderColor = UIColor.blue.cgColor
-        rangeDegreeButton.addTarget(self, action: #selector(rangeDegreeButtonAnchors), for: .touchUpInside)
-        view.addSubview(rangeDegreeButton)
-        
-        rangeDegreeButton.snp.makeConstraints { make in
-            make.top.equalTo(numberTextField.snp.bottom).offset(10)
-            make.trailing.equalTo(numberTextField.snp.trailing)
             make.width.equalTo(60)
             make.height.equalTo(30)
         }
@@ -217,58 +195,42 @@ class DetectNailViewController: UIViewController { // , UITableViewDelegate, UIT
         view.addSubview(distanceFilterLabel)
         
         distanceFilterLabel.snp.makeConstraints { make in
-            make.top.equalTo(rangeDegreeButton.snp.bottom).offset(20)
-            make.leading.equalToSuperview().offset(12)
+            make.top.equalTo(sliderConf.snp.bottom).offset(30)
+            make.centerX.equalToSuperview()
         }
         
-//        fromDistanceTextField = UITextField()
         fromDistanceTextField.layer.borderWidth = 1
         fromDistanceTextField.layer.borderColor = UIColor.black.cgColor
         fromDistanceTextField.layer.cornerRadius = 4
-//        fromDistanceTextField.borderStyle = .roundedRect
+        fromDistanceTextField.text = "10"
         fromDistanceTextField.keyboardType = .numberPad
-//        fromDistanceTextField.backgroundColor = .white
+        fromDistanceTextField.textAlignment = .center
         fromDistanceTextField.textColor = .black
         view.addSubview(fromDistanceTextField)
         
         fromDistanceTextField.snp.makeConstraints { make in
             make.top.equalTo(distanceFilterLabel.snp.bottom).offset(10)
-            make.leading.equalToSuperview().offset(12)
+            make.centerX.equalToSuperview().offset(-35)
             make.width.equalTo(60)
             make.height.equalTo(30)
         }
         
-//        toDistanceTextField = UITextField()
         toDistanceTextField.layer.borderWidth = 1
         toDistanceTextField.layer.borderColor = UIColor.black.cgColor
         toDistanceTextField.layer.cornerRadius = 4
-//        toDistanceTextField.borderStyle = .roundedRect
+        toDistanceTextField.text = "150"
+        toDistanceTextField.textAlignment = .center
         toDistanceTextField.keyboardType = .numberPad
-//        toDistanceTextField.backgroundColor = .white
         toDistanceTextField.textColor = .black
         view.addSubview(toDistanceTextField)
         
         toDistanceTextField.snp.makeConstraints { make in
             make.top.equalTo(distanceFilterLabel.snp.bottom).offset(10)
-            make.leading.equalTo(fromDistanceTextField.snp.trailing).offset(10)
+            make.centerX.equalToSuperview().offset(35)
             make.width.equalTo(60)
             make.height.equalTo(30)
         }
         
-//        filterDistanceButton = UIButton(type: .system)
-//        filterDistanceButton.setTitle("Filter", for: .normal)
-//        filterDistanceButton.layer.borderWidth = 1
-//        filterDistanceButton.layer.cornerRadius = 5
-//        filterDistanceButton.layer.borderColor = UIColor.blue.cgColor
-//        filterDistanceButton.addTarget(self, action: #selector(filterDistanceButtonTapped), for: .touchUpInside)
-//        view.addSubview(filterDistanceButton)
-        
-//        filterDistanceButton.snp.makeConstraints { make in
-//            make.top.equalTo(toDistanceTextField.snp.bottom).offset(10)
-//            make.leading.equalTo(fromDistanceTextField.snp.leading)
-//            make.width.equalTo(60)
-//            make.height.equalTo(30)
-//        }
     }
 
     
@@ -306,11 +268,11 @@ class DetectNailViewController: UIViewController { // , UITableViewDelegate, UIT
 //    }
 
     
-    @objc func rangeDegreeButtonAnchors() {
-        let numberText = numberTextField.text ?? ""
-        print("Number entered: \(numberText)")
-        rangeDegree = Double(String(numberText)) ?? 5
-    }
+//    @objc func rangeDegreeButtonAnchors() {
+//        let numberText = numberTextField.text ?? ""
+//        print("Number entered: \(numberText)")
+//        rangeDegree = Double(String(numberText)) ?? 5
+//    }
     
     @objc func sliderChanged(_ sender: Any) {
         let conf = Double(round(100 * sliderConf.value)) / 100
@@ -471,8 +433,11 @@ extension DetectNailViewController: AVCapturePhotoCaptureDelegate {
         
         let fromDistanceText = fromDistanceTextField.text ?? ""
         let toDistanceText = toDistanceTextField.text ?? ""
+        let numberTextField = numberTextField.text ?? ""
+        //        print("Number entered: \(numberText)")
+        //        rangeDegree = Double(String(numberText)) ?? 5
         
-        guard let fromDistance = Double(fromDistanceText), let toDistance = Double(toDistanceText) else {
+        guard let fromDistance = Double(fromDistanceText), let toDistance = Double(toDistanceText), let rangeDegree = Double(String(numberTextField))  else {
             showAlert(message: "Invalid distance range. Please enter valid distances.")
             return
         }
@@ -481,6 +446,12 @@ extension DetectNailViewController: AVCapturePhotoCaptureDelegate {
             showAlert(message: "To distance cannot be empty. Please enter a valid distance.")
             return
         }
+        
+        guard !numberTextField.isEmpty else {
+            showAlert(message: "To distance cannot be empty. Please enter a valid distance.")
+            return
+        }
+        
         
         guard toDistance > fromDistance else {
             showAlert(message: "To distance must be greater than from distance. Please enter a valid distance range.")
@@ -493,6 +464,7 @@ extension DetectNailViewController: AVCapturePhotoCaptureDelegate {
                                     rangeOfDegree: rangeDegree,
                                     fromDistance: fromDistance,
                                     toDistance: toDistance)
+        vc.modalPresentationStyle = .fullScreen
         self.present(vc, animated: true)
     }
 
