@@ -14,7 +14,7 @@ import ARKit
 import Photos
 
 
-class DetectNailViewController: UIViewController { // , UITableViewDelegate, UITableViewDataSource
+class DetectNailViewController: UIViewController, UITableViewDelegate, UITableViewDataSource { // , UITableViewDelegate, UITableViewDataSource
     
     enum MeasureState {
         case lengthCalc
@@ -30,7 +30,7 @@ class DetectNailViewController: UIViewController { // , UITableViewDelegate, UIT
     @IBOutlet weak var startButton: UIButton!
     @IBOutlet weak var sceneView: MeasureSCNView!
     
-    //    var labelsTableView: UITableView!
+        var labelsTableView: UITableView!
     var currentState: MeasureState = MeasureState.lengthCalc
     var lengthNodes = NSMutableArray()
     var breadthNodes = NSMutableArray()
@@ -140,7 +140,7 @@ class DetectNailViewController: UIViewController { // , UITableViewDelegate, UIT
             make.top.equalTo(labelSliderConf.snp.top)
             make.trailing.equalToSuperview().offset(-12)
         }
-        
+//        setupLabelsTableView()
         setupNumberTextField()
         setupDistanceFilterUI()
         setupTapGesture()
@@ -233,6 +233,21 @@ class DetectNailViewController: UIViewController { // , UITableViewDelegate, UIT
         
     }
 
+        func setupLabelsTableView() {
+            labelsTableView = UITableView()
+            labelsTableView.delegate = self
+            labelsTableView.dataSource = self
+            labelsTableView.register(UITableViewCell.self, forCellReuseIdentifier: "InfoCell")
+            self.view.addSubview(labelsTableView)
+            labelsTableView.snp.makeConstraints { make in
+                make.leading.equalToSuperview()
+                make.trailing.equalToSuperview()
+                make.top.equalTo(videoPreview.snp.bottom)
+                make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom)
+            }
+        }
+    
+        
     
     func setupTapGesture() {
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
@@ -367,6 +382,7 @@ extension DetectNailViewController {
             self.predictions = predictions
             DispatchQueue.main.async {
                 self.boxesView.predictedObjects = predictions
+//                self.labelsTableView.reloadData()
 //                self.boxesView.rangeDegree = self.rangeDegree
 //                self.boxesView.startDistance = self.startDistance
 //                self.boxesView.endDistance = self.endDistance
@@ -378,6 +394,27 @@ extension DetectNailViewController {
             self.isInferencing = false
         }
         self.semaphore.signal()
+    }
+}
+
+extension DetectNailViewController {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return predictions.count
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: "InfoCell") else {
+            return UITableViewCell()
+        }
+        
+        //        addPoint()
+        let rectString = predictions[indexPath.row].boundingBox.toString(digit: 2, width: videoPreview.frame.width, height: videoPreview.frame.height)
+        let confidence = predictions[indexPath.row].labels.first?.confidence ?? -1
+        let confidenceString = String(format: "%.3f", confidence)
+        
+        //        cell.textLabel?.text = "Point \(indexPath.row + 1): \(rectString)"
+        print("Point \(indexPath.row + 1): \(rectString)")
+        return cell
     }
 }
 

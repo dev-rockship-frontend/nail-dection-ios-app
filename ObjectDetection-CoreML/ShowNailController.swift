@@ -144,7 +144,7 @@ class ShowNailController: UIViewController, ARSCNViewDelegate, ARSessionDelegate
     
     func setupDismissButton() {
         let dismissButton = UIButton()
-        dismissButton.setImage(UIImage(named: "dismiss_icon"), for: .normal)
+        dismissButton.setImage(UIImage(named: "delete"), for: .normal)
         dismissButton.addTarget(self, action: #selector(dismissButtonTapped), for: .touchUpInside)
         view.addSubview(dismissButton)
         dismissButton.snp.makeConstraints { make in

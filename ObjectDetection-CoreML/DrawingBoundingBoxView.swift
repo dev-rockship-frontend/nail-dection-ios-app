@@ -5,6 +5,13 @@
 //  Created by GwakDoyoung on 04/02/2019.
 //  Copyright © 2019 tucan9389. All rights reserved.
 //
+//
+//  DrawingBoundingBoxView.swift
+//  SSDMobileNet-CoreML
+//
+//  Created by GwakDoyoung on 04/02/2019.
+//  Copyright © 2019 tucan9389. All rights reserved.
+//
 
 import UIKit
 import Vision
@@ -51,7 +58,14 @@ class DrawingBoundingBoxView: UIView {
         guard let context = UIGraphicsGetCurrentContext() else { return }
         context.clear(rect)
         drawBoundingBoxes()
-        drawConnectingLines(context: context)
+        
+        
+        //        drawConnectingLines(context: context)
+    }
+    
+    // Check if the line between two points is parallel to the x-axis or y-axis
+    private func isParallelToAxis(firstCenter: CGPoint, secondCenter: CGPoint) -> Bool {
+        return firstCenter.x == secondCenter.x || firstCenter.y == secondCenter.y
     }
     
     // Draw bounding boxes for predicted objects
@@ -59,8 +73,130 @@ class DrawingBoundingBoxView: UIView {
         subviews.forEach({ $0.removeFromSuperview() })
         
         for prediction in predictedObjects {
+            print(prediction)
             createLabelAndBox(prediction: prediction)
         }
+        
+                if isDistance3D {
+        drawLinesBetweenAlignedBoundingBoxes()
+                }
+    }
+    
+    
+    // Draw lines between bounding boxes if they are aligned with axes within a tolerance
+    func drawLinesBetweenAlignedBoundingBoxes() {
+        guard predictedObjects.count > 1 else { return }
+        
+        let context = UIGraphicsGetCurrentContext()
+        context?.setStrokeColor(UIColor.blue.cgColor)
+        context?.setLineWidth(2.0)
+        
+        // Track connections
+        var connections: [Int: [Int]] = [:]  // Dictionary to track connected points
+        
+        for i in 0..<predictedObjects.count {
+            let firstBoundingBox = predictedObjects[i].boundingBox
+            let firstCenter = convertBoundingBoxToPoint(boundingBox: firstBoundingBox)
+            var secondCenter: CGPoint = CGPoint(x: 0, y: 0)
+            // Find closest aligned point to connect with
+            var closestPointIndex: Int? = nil
+            var minDistance: CGFloat = .greatestFiniteMagnitude
+            
+            for j in 0..<predictedObjects.count {
+                if i == j { continue }
+                
+                let secondBoundingBox = predictedObjects[j].boundingBox
+                secondCenter = convertBoundingBoxToPoint(boundingBox: secondBoundingBox)
+                
+                if shouldDrawLine(from: firstCenter, to: secondCenter) {
+                    let distance = hypot(secondCenter.x - firstCenter.x, secondCenter.y - firstCenter.y)
+                    
+                    if distance < minDistance {
+                        minDistance = distance
+                        closestPointIndex = j
+                    }
+                }
+            }
+            
+            let x1 = firstCenter.x, y1 = firstCenter.y
+            let x2 = secondCenter.x, y2 = secondCenter.y
+            
+            let angleX = isAngleOfDeviationGreaterThanFiveDegrees(x1: x1, y1: y1, x2: x2, y2: y2, withRespectTo: .x).rounded()
+            let angleY = isAngleOfDeviationGreaterThanFiveDegrees(x1: x1, y1: y1, x2: x2, y2: y2, withRespectTo: .y).rounded()
+            
+            var angle = ""
+            if angleX <= rangeDegree {
+                angle = "\(angleX)"
+            } else if angleY <= rangeDegree {
+                angle = "\(angleY)"
+            }
+            
+            // Draw line to the closest point if not already connected
+            if let closestIndex = closestPointIndex {
+                let connectionsForFirst = connections[i] ?? []
+                let connectionsForClosest = connections[closestIndex] ?? []
+                
+                if connectionsForFirst.count <= 4 && connectionsForClosest.count <= 4 {
+                    let closestCenter = convertBoundingBoxToPoint(boundingBox: predictedObjects[closestIndex].boundingBox)
+                    
+                    if let point1_3D = convertBoundingBoxTo3D(firstCenter), let point2_3D = convertBoundingBoxTo3D(secondCenter) {
+                        let distance = Double(calculateDistance(from: point1_3D, to: point2_3D) * 1000)
+
+                        print("distance \(distance)")
+                        
+//                        if distance >= startDistance && distance <= endDistance {
+                            context?.move(to: firstCenter)
+                            context?.addLine(to: closestCenter)
+                            
+                            // Update connections
+                            connections[i] = connectionsForFirst + [closestIndex]
+                            connections[closestIndex] = connectionsForClosest + [i]
+                            
+//                            let midpoint = CGPoint(x: (firstCenter.x + secondCenter.x) / 2, y: (firstCenter.y + secondCenter.y) / 2)
+//                            displayDistanceLabel(at: midpoint, distance: "\(Int(distance)), \(angle)")
+//                        }
+                    } else {
+                        print("Failed to get 3D coordinates for nails.")
+                    }
+                    
+//                                        context?.move(to: firstCenter)
+//                                        context?.addLine(to: closestCenter)
+//                    
+//                                        // Update connections
+//                                        connections[i] = connectionsForFirst + [closestIndex]
+//                                        connections[closestIndex] = connectionsForClosest + [i]
+                }
+            }
+        }
+        
+        context?.strokePath()
+    }
+    
+    // Check if line should be drawn based on alignment with axes and angle tolerance
+    private func shouldDrawLine(from pointA: CGPoint, to pointB: CGPoint) -> Bool {
+        let deltaX = pointB.x - pointA.x
+        let deltaY = pointB.y - pointA.y
+        
+        let angle = atan2(deltaY, deltaX) * 180 / .pi
+        let angleTolerance: CGFloat = 30.0 // Tolerance angle in degrees
+        
+        let angleDifference = min(
+            abs(angle - 0), // Angle with respect to x-axis
+            abs(angle - 90) // Angle with respect to y-axis
+        )
+        
+        return angleDifference <= rangeDegree
+    }
+    
+    // Convert bounding box to CGPoint
+    private func convertBoundingBoxToPoint(boundingBox: CGRect) -> CGPoint {
+        let viewWidth = self.bounds.size.width
+        let viewHeight = self.bounds.size.height
+        
+        let x = boundingBox.origin.x * viewWidth + boundingBox.size.width * viewWidth / 2
+        let y = (1 - boundingBox.origin.y) * viewHeight - boundingBox.size.height * viewHeight / 2
+        
+        return CGPoint(x: x, y: y)
     }
     
     // Create label and box for each prediction
