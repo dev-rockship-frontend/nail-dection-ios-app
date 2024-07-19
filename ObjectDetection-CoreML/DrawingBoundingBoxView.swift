@@ -12,19 +12,29 @@ import ARKit
 
 class DrawingBoundingBoxView: UIView {
     
+    // Properties
     var isDistance3D: Bool = false
     var rangeDegree: Double = 0.0
     var startDistance: Double = 0.0
     var endDistance: Double = 0.0
+    var sceneView: ARSCNView?
+    
+    static private var colors: [String: UIColor] = [:]
+    
+    // Predicted objects to display
+    public var predictedObjects: [VNRecognizedObjectObservation] = [] {
+        didSet {
+            self.setNeedsDisplay()
+        }
+    }
+    
+    // Enum for axis
     enum Axis {
         case x
         case y
     }
     
-    var sceneView: ARSCNView?
-    
-    static private var colors: [String: UIColor] = [:]
-    
+    // Function to get label color
     public func labelColor(with label: String) -> UIColor {
         if let color = DrawingBoundingBoxView.colors[label] {
             return color
@@ -35,12 +45,7 @@ class DrawingBoundingBoxView: UIView {
         }
     }
     
-    public var predictedObjects: [VNRecognizedObjectObservation] = [] {
-        didSet {
-            self.setNeedsDisplay()
-        }
-    }
-    
+    // Override draw function
     override func draw(_ rect: CGRect) {
         super.draw(rect)
         guard let context = UIGraphicsGetCurrentContext() else { return }
@@ -49,6 +54,7 @@ class DrawingBoundingBoxView: UIView {
         drawConnectingLines(context: context)
     }
     
+    // Draw bounding boxes for predicted objects
     func drawBoundingBoxes() {
         subviews.forEach({ $0.removeFromSuperview() })
         
@@ -57,6 +63,7 @@ class DrawingBoundingBoxView: UIView {
         }
     }
     
+    // Create label and box for each prediction
     func createLabelAndBox(prediction: VNRecognizedObjectObservation) {
         let scale = CGAffineTransform.identity.scaledBy(x: bounds.width, y: bounds.height)
         let transform = CGAffineTransform(scaleX: 1, y: -1).translatedBy(x: 0, y: -1)
@@ -69,6 +76,7 @@ class DrawingBoundingBoxView: UIView {
         addSubview(bgView)
     }
     
+    // Draw connecting lines between points
     func drawConnectingLines(context: CGContext) {
         guard predictedObjects.count > 1 else { return }
         
@@ -85,9 +93,10 @@ class DrawingBoundingBoxView: UIView {
         drawLinesThroughPoints(context: context, points: points)
     }
     
+    // Display distance label at a given point
     func displayDistanceLabel(at point: CGPoint, distance: String) {
         let distanceLabel = UILabel()
-        distanceLabel.text = distance //String(format: "%.2f", distance)
+        distanceLabel.text = distance
         distanceLabel.font = UIFont.systemFont(ofSize: 12)
         distanceLabel.textColor = .white
         distanceLabel.sizeToFit()
@@ -98,13 +107,13 @@ class DrawingBoundingBoxView: UIView {
         addSubview(distanceLabel)
     }
     
-    
-  
+    // Calculate distance between two 3D points
     private func calculateDistance(from point1: SCNVector3, to point2: SCNVector3) -> Float {
-        let vector = SCNVector3(point2.x - point1.x, point2.y - point1.y, point2.z - point1.z)
+        let vector = SCNVector3(point2.x - point1.x, point2.y - point1.y, point2.z - point2.z)
         return sqrt(vector.x * vector.x + vector.y * vector.y + vector.z * vector.z)
     }
     
+    // Convert 2D bounding box point to 3D point
     private func convertBoundingBoxTo3D(_ point: CGPoint) -> SCNVector3? {
         guard let sceneView = self.sceneView else {
             return nil
@@ -118,41 +127,31 @@ class DrawingBoundingBoxView: UIView {
         
         return nil
     }
-
-
     
+    // Draw lines through points with additional logic for angle and distance checks
     func drawLinesThroughPoints(context: CGContext, points: [CGPoint]) {
-
-//        214   463
         let edges = createEdges(points: points)
         let mstEdges = kruskal(points: points, edges: edges)
-
+        
         context.beginPath()
         
         for edge in mstEdges {
-
             let x1 = edge.0.x, y1 = edge.0.y
             let x2 = edge.1.x, y2 = edge.1.y
-
-            let a = isAngleOfDeviationGreaterThanFiveDegrees(x1: x1, y1: y1, x2: x2, y2: y2, withRespectTo: .x).rounded()
-            let b = isAngleOfDeviationGreaterThanFiveDegrees(x1: x1, y1: y1, x2: x2, y2: y2, withRespectTo: .y).rounded()
+            
+            let angleX = isAngleOfDeviationGreaterThanFiveDegrees(x1: x1, y1: y1, x2: x2, y2: y2, withRespectTo: .x).rounded()
+            let angleY = isAngleOfDeviationGreaterThanFiveDegrees(x1: x1, y1: y1, x2: x2, y2: y2, withRespectTo: .y).rounded()
             
             var angle = ""
-            if a <= rangeDegree {
-                angle = "\(a)"
-            } else if b <= rangeDegree {
-                angle = "\(b)"
-            } else {
-                angle = ""
+            if angleX <= rangeDegree {
+                angle = "\(angleX)"
+            } else if angleY <= rangeDegree {
+                angle = "\(angleY)"
             }
-
-            print(rangeDegree)
-            if a <= rangeDegree || b <= rangeDegree {
+            
+            if angleX <= rangeDegree || angleY <= rangeDegree {
                 if isDistance3D {
-                    
-                    let point1_3D = convertBoundingBoxTo3D(edge.0)
-                    let point2_3D  = convertBoundingBoxTo3D(edge.1)
-                    if let point1_3D = point1_3D, let point2_3D = point2_3D {
+                    if let point1_3D = convertBoundingBoxTo3D(edge.0), let point2_3D = convertBoundingBoxTo3D(edge.1) {
                         let distance = Double(calculateDistance(from: point1_3D, to: point2_3D) * 1000)
                         
                         if distance >= startDistance && distance <= endDistance {
@@ -171,10 +170,10 @@ class DrawingBoundingBoxView: UIView {
         context.strokePath()
     }
     
-
+    // Calculate angle of deviation
     func isAngleOfDeviationGreaterThanFiveDegrees(x1: CGFloat, y1: CGFloat, x2: CGFloat, y2: CGFloat, withRespectTo axis: Axis) -> CGFloat {
-        var difference1: CGFloat
-        var difference2: CGFloat
+        let difference1: CGFloat
+        let difference2: CGFloat
         
         switch axis {
         case .x:
@@ -185,22 +184,15 @@ class DrawingBoundingBoxView: UIView {
             difference2 = abs(x2 - x1)
         }
         
-        // Calculate the length of the vector projection
         let length = sqrt(difference1 * difference1 + difference2 * difference2)
-        
-        //         Calculate the cosine of the angle
         let cosTheta = difference1 / length
-        
-        // Calculate the angle in radians
         let theta = acos(cosTheta)
-        
-        // Convert the angle to degrees
         let thetaInDegrees = theta * 180.0 / .pi
         
-        // Check if the angle is greater than 5 degrees
         return thetaInDegrees
     }
     
+    // Create edges for points
     func createEdges(points: [CGPoint]) -> [(CGPoint, CGPoint, CGFloat)] {
         var edges: [(CGPoint, CGPoint, CGFloat)] = []
         for i in 0..<points.count {
@@ -212,12 +204,14 @@ class DrawingBoundingBoxView: UIView {
         return edges
     }
     
+    // Calculate distance between two points
     func calculateDistanceBetweenPoints(point1: CGPoint, point2: CGPoint) -> CGFloat {
         let deltaX = point2.x - point1.x
         let deltaY = point2.y - point1.y
         return sqrt(deltaX * deltaX + deltaY * deltaY)
     }
     
+    // Kruskal's algorithm for minimum spanning tree
     func kruskal(points: [CGPoint], edges: [(CGPoint, CGPoint, CGFloat)]) -> [(CGPoint, CGPoint)] {
         var parent = [Int](0..<points.count)
         var rank = [Int](repeating: 0, count: points.count)
@@ -262,6 +256,7 @@ class DrawingBoundingBoxView: UIView {
     }
 }
 
+// Extensions
 extension VNRecognizedObjectObservation {
     var label: String? {
         return self.labels.first?.identifier

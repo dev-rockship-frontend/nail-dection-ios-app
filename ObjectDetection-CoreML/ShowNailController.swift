@@ -9,28 +9,21 @@
 import UIKit
 import Vision
 import ARKit
+import SnapKit
 
 class ShowNailController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
     
+    // Properties
     var nails: [VNRecognizedObjectObservation]
-    
     var screenshot: UIImage
-    
     var rangeOfDegree: Double
-    
     var fromDistance: Double
-    
     var toDistance: Double
-    
     var frame: CGRect
     
+    // UI Elements
     private lazy var boxesView: DrawingBoundingBoxView = {
         let view = DrawingBoundingBoxView()
-        return view
-    }()
-    
-    private lazy var videoPreview: UIView = {
-        let view = UIView()
         return view
     }()
     
@@ -51,7 +44,7 @@ class ShowNailController: UIViewController, ARSCNViewDelegate, ARSessionDelegate
         tf.placeholder = "from"
         return tf
     }()
-
+    
     private lazy var toDistanceTextField: UITextField = {
         let tf = UITextField()
         tf.placeholder = "to"
@@ -64,7 +57,6 @@ class ShowNailController: UIViewController, ARSCNViewDelegate, ARSessionDelegate
         slider.maximumValue = 1
         slider.value = 0.25
         slider.isUserInteractionEnabled = false
-//        slider.addTarget(self, action: #selector(sliderChanged), for: .valueChanged)
         return slider
     }()
     
@@ -84,12 +76,8 @@ class ShowNailController: UIViewController, ARSCNViewDelegate, ARSessionDelegate
         return label
     }()
     
-    init(nails: [VNRecognizedObjectObservation],
-         screenshot: UIImage,
-         frame: CGRect,
-         rangeOfDegree: Double,
-         fromDistance: Double,
-         toDistance: Double) {
+    // Initializer
+    init(nails: [VNRecognizedObjectObservation], screenshot: UIImage, frame: CGRect, rangeOfDegree: Double, fromDistance: Double, toDistance: Double) {
         self.nails = nails
         self.screenshot = screenshot
         self.frame = frame
@@ -103,41 +91,58 @@ class ShowNailController: UIViewController, ARSCNViewDelegate, ARSessionDelegate
         fatalError("init(coder:) has not been implemented")
     }
     
+    // View Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         
         view.backgroundColor = .white
-        sceneView = ARSCNView(frame: frame)
-        view.addSubview(sceneView)
-        
-        sceneView.delegate = self
-        sceneView.session.delegate = self
-        sceneView.automaticallyUpdatesLighting = true
-        
-        imageView = UIImageView()
-        imageView.frame = self.frame
-        imageView.image = screenshot
-        view.addSubview(imageView)
+        setupSceneView()
+        setupImageView()
+        setupBoundingBoxView()
+        setupUIComponents()
         
         // Start AR session
         startARSession()
-        boxesView = DrawingBoundingBoxView(frame: frame)
+        
+        // Configure 3D distance after a delay
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+            self.configureBoundingBoxView()
+        }
+    }
+    
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        boxesView.isDistance3D = false
+    }
+    
+    // Setup Functions
+    func setupSceneView() {
+        sceneView.frame = frame
+        sceneView.delegate = self
+        sceneView.session.delegate = self
+        sceneView.automaticallyUpdatesLighting = true
+        view.addSubview(sceneView)
+    }
+    
+    func setupImageView() {
+        imageView.frame = frame
+        imageView.image = screenshot
+        view.addSubview(imageView)
+    }
+    
+    func setupBoundingBoxView() {
+        boxesView.frame = frame
         boxesView.backgroundColor = .clear
         view.addSubview(boxesView)
-        
-        // Configure 3D distance after a delay (example: 3 seconds)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
-            
-            self.boxesView.isDistance3D = true
-            self.boxesView.predictedObjects = self.nails
-            self.boxesView.sceneView = self.sceneView
-            self.boxesView.startDistance = self.fromDistance
-            self.boxesView.endDistance = self.toDistance
-            self.boxesView.rangeDegree = self.rangeOfDegree
-            
-        }
-        
-        
+    }
+    
+    func setupUIComponents() {
+        setupDismissButton()
+        setupNumberTextField()
+        setupDistanceFilterUI()
+    }
+    
+    func setupDismissButton() {
         let dismissButton = UIButton()
         dismissButton.setImage(UIImage(named: "dismiss_icon"), for: .normal)
         dismissButton.addTarget(self, action: #selector(dismissButtonTapped), for: .touchUpInside)
@@ -147,13 +152,9 @@ class ShowNailController: UIViewController, ARSCNViewDelegate, ARSessionDelegate
             make.trailing.equalToSuperview().offset(-12)
             make.width.height.equalTo(30)
         }
-        
-        setupNumberTextField()
-        setupDistanceFilterUI()
     }
     
     func setupNumberTextField() {
-        
         view.addSubview(labelSliderConf)
         labelSliderConf.snp.makeConstraints { make in
             make.top.equalTo(boxesView.snp.bottom).offset(10)
@@ -169,7 +170,6 @@ class ShowNailController: UIViewController, ARSCNViewDelegate, ARSessionDelegate
         }
         
         view.addSubview(labelRangeOfDegree)
-        
         labelRangeOfDegree.snp.makeConstraints { make in
             make.top.equalTo(labelSliderConf.snp.top)
             make.trailing.equalToSuperview().offset(-12)
@@ -241,26 +241,29 @@ class ShowNailController: UIViewController, ARSCNViewDelegate, ARSessionDelegate
             make.width.equalTo(60)
             make.height.equalTo(30)
         }
-        
     }
     
-    
-    override func viewDidDisappear(_ animated: Bool) {
-        super.viewDidDisappear(animated)
-        boxesView.isDistance3D = false
+    // Configure BoundingBoxView
+    func configureBoundingBoxView() {
+        boxesView.isDistance3D = true
+        boxesView.predictedObjects = nails
+        boxesView.sceneView = sceneView
+        boxesView.startDistance = fromDistance
+        boxesView.endDistance = toDistance
+        boxesView.rangeDegree = rangeOfDegree
     }
     
-    @objc func dismissButtonTapped() {
-        self.dismiss(animated: true, completion: nil)
-    }
-    
+    // Start AR session
     func startARSession() {
         let configuration = ARWorldTrackingConfiguration()
         configuration.planeDetection = .horizontal
         sceneView.session.run(configuration, options: [.resetTracking, .removeExistingAnchors])
-        
+    }
+    
+    // Dismiss button action
+    @objc func dismissButtonTapped() {
+        self.dismiss(animated: true, completion: nil)
     }
 }
-
 
 

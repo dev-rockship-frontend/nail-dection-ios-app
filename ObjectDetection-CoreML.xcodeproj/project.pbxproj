@@ -137,7 +137,6 @@
 				554F149B220362AB00B828B0 /* AppDelegate.swift */,
 				6001853D2C365C4300EB5EC0 /* TabBarController.swift */,
 				554F149D220362AB00B828B0 /* DetectNailViewController.swift */,
-				60DCBF8B2C3AF68C0093E1AA /* SCNSphere+Init.swift */,
 				1B1B2BAA2C368DAC006A4C1D /* DetectNailViewController.xib */,
 				1BDA9BB82C3697D5002B62F5 /* DistanceViewController.swift */,
 				1B62E55B2C4685B000BC01DB /* ShowNailController.swift */,
@@ -174,6 +173,7 @@
 		71B8322322E2B0BC00207D05 /* ultils */ = {
 			isa = PBXGroup;
 			children = (
+				60DCBF8B2C3AF68C0093E1AA /* SCNSphere+Init.swift */,
 				1B62E55D2C482AC500BC01DB /* ThresholdProvider.swift */,
 				554F14AD220362DA00B828B0 /* VideoCapture.swift */,
 				558918EE22089FFE00F182BA /* Measure.swift */,
